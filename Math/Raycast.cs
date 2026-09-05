@@ -9,8 +9,9 @@ public static class Ray
 
             data.direction = EMath.getDirection(MathHelper.ToRadians((float)direction));
 
-            Vector2 step = new Vector2(Math.Sign(data.direction.X), Math.Sign(data.direction.Y));
-            Vector2 mapCheck = new Vector2((int)Math.Floor(pos.X), (int)Math.Floor(pos.Y));
+            EMath.Vector2i step = new EMath.Vector2i(Math.Sign(data.direction.X), Math.Sign(data.direction.Y));
+            EMath.Vector2i mapCheck = EMath.FloorVector(pos);
+            new Vector2((int)Math.Floor(pos.X), (int)Math.Floor(pos.Y));
 
             Vector2 roFract = new Vector2(pos.X - mapCheck.X, pos.Y - mapCheck.Y);
 
@@ -46,7 +47,7 @@ public static class Ray
                     rayLength.Y += rayUnitStepSize.Y;
                 }
 
-                data.hitData = MAP[(int)mapCheck.Y * MAP_RESOLUTION.Y + (int)mapCheck.X];
+                data.hitData = MAP[mapCheck.Y * MAP_RESOLUTION.Y + mapCheck.X];
                 if (data.hitData > 0)
                     break;
             }
@@ -63,5 +64,16 @@ public static class Ray
             public int hitData;
             public int hitSide;
             public Vector2 hitPosition;
+        }
+
+        public struct LineData
+        {
+            public float lineWidth;
+            public float lineHeight;
+            public float drawStart;
+            public float drawEnd;
+            public Color color;
+
+            public double texX;
         }
     }

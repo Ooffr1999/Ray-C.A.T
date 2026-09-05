@@ -4,9 +4,11 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/teodor.jpg</File>
+    <File>C:/Users/chris/Documents/C#/Ray-C.A.T/Content/textures/Debug1x1.png</File>
+    <File>C:/Users/chris/Documents/C#/Ray-C.A.T/Content/textures/teodor.jpg</File>
   </SourceFiles>
   <DestFiles>
+    <File xsi:nil="true" />
     <File xsi:nil="true" />
   </DestFiles>
 </SourceFileCollection>
