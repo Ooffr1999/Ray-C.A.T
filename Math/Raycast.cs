@@ -48,7 +48,7 @@ public static class Ray
                 }
 
                 data.hitData = MAP[mapCheck.Y * MAP_RESOLUTION.Y + mapCheck.X];
-                if (data.hitData > 0)
+                if (data.hitData == 1)
                     break;
             }
 
@@ -57,23 +57,23 @@ public static class Ray
             return data;
         }
 
-        public struct Raydata
-        {
-            public float distance;
-            public Vector2 direction;
-            public int hitData;
-            public int hitSide;
-            public Vector2 hitPosition;
-        }
-
-        public struct LineData
-        {
-            public float lineWidth;
-            public float lineHeight;
-            public float drawStart;
-            public float drawEnd;
-            public Color color;
-
-            public double texX;
-        }
+    public struct Raydata
+    {
+        public float distance;
+        public Vector2 direction;
+        public int hitData;
+        public int hitSide;
+        public Vector2 hitPosition;
     }
+
+    public struct LineData
+    {
+        public float lineWidth;
+        public float lineHeight;
+        public float drawStart;
+        public float drawEnd;
+        public Color color;
+
+        public double texX;
+    }
+}

@@ -10,7 +10,7 @@ public static class Primitives{
     
     static Primitives()
     {
-        blank = AssetLoader.LoadTexture2D("C:/Users/chris/Documents/C#/Ray-C.A.T/Content/textures/Debug1x1.png");
+        blank = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/Debug1x1.png");
     }
 
     public static void DrawBox(SpriteBatch batch, Vector2 location, Color color, float rotation, Vector2 scale, float layer)
@@ -25,6 +25,26 @@ public static class Primitives{
     public static void DrawBox(SpriteBatch batch, Vector2 location, Color color, Vector2 scale)
     {
         DrawBox(batch, location, color, 0.0f, scale, 0.0f);
+    }
+
+    public static void DrawBox(SpriteBatch batch, Vector2 location, Color color, Vector2 scale, float layer)
+    {
+        DrawBox(batch, location, color, 0.0f, scale, layer);
+    }
+
+    public static void DrawTexturedBox(SpriteBatch batch, Texture2D texture, EMath.Vector2i texturePosition, EMath.Vector2i textureDimension, Vector2 position, Vector2 origin, Vector2 scale, Color color)
+    {
+        TextureRegion box = new TextureRegion(texture, texturePosition.X, texturePosition.Y, textureDimension.X, textureDimension.Y);
+
+        box.Draw(batch, 
+            position, 
+            color, 
+            0,
+            origin, 
+            new Vector2(scale.X / textureDimension.X, scale.Y / textureDimension.Y),
+            //scale,
+            SpriteEffects.None, 
+            0.0f);
     }
 
     #region Draw Untextured Line
@@ -79,8 +99,6 @@ public static class Primitives{
         float angle = (float)Math.Atan2(direction.Y, direction.X);
         
         TextureRegion line = new TextureRegion(texture, x, y, (int)Math.Clamp(thicknessModifier, 0, texture.Width), texture.Height);
-        
-        
         
         line.Draw(batch, 
                     start, 

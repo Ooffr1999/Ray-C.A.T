@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Data.Common;
+using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics.X86;
+using System.Runtime.Serialization;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -18,11 +22,11 @@ public class Game1 : Game
     static int[] MAP = 
     {
         1, 1, 1, 1, 1, 1, 1, 1,
-        1, 0, 1, 0, 0, 0, 0, 1,
-        1, 0, 1, 0, 0, 0, 0, 1,
-        1, 0, 1, 0, 0, 0, 0, 1,
+        1, 0, 2, 0, 0, 0, 0, 1,
+        1, 2, 0, 0, 0, 0, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
-        1, 0, 0, 0, 0, 1, 0, 1,
+        1, 0, 0, 0, 0, 0, 0, 1,
+        1, 2, 0, 2, 0, 1, 0, 1,
         1, 0, 0, 0, 0, 0, 0, 1,
         1, 1, 1, 1, 1, 1, 1, 1,
     };
@@ -34,6 +38,8 @@ public class Game1 : Game
 
     Sprite player;
 
+    float height = 0.5f;
+
     Vector2 pos = new Vector2(1.5f, 1.5f);
     Vector2 lastPos = new Vector2(0, 0);
 
@@ -41,7 +47,7 @@ public class Game1 : Game
     Vector2 forward = Vector2.Zero;
     Vector2 right = Vector2.Zero;
     
-    bool showMap = false;
+    bool showMap = true;
 
     float accumulatedDeltaTime = 0;
     int FPS = 0;
@@ -52,12 +58,13 @@ public class Game1 : Game
     InputManager input;
 
     Texture2D wall;
+    Texture2D brickWall;
 
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
-        IsMouseVisible = false;
+        IsMouseVisible = true;
     }
 
     protected override void Initialize()
@@ -84,8 +91,9 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-        player = new Sprite(AssetLoader.LoadTexture2D("C:/Users/chris/Documents/C#/Ray-C.A.T/Content/textures/teodor.jpg"));
-        wall = AssetLoader.LoadTexture2D("C:/Users/chris/Documents/C#/Ray-C.A.T/Content/textures/teodor.jpg");
+        player = new Sprite(AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/teodor.jpg"));
+        wall = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/redbrick.png");
+        brickWall = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/redbrick.png");
     }
 
     protected override void Update(GameTime gameTime)
@@ -163,18 +171,25 @@ public class Game1 : Game
 
         EMath.Vector2i mapCheck = EMath.FloorVector(pos + nextFramePosition);
         
-        if (MAP[MAP_RESOLUTION.Y * mapCheck.Y + mapCheck.X] < 1)
+        if (MAP[MAP_RESOLUTION.Y * mapCheck.Y + mapCheck.X] != 1)
             pos += nextFramePosition;
 
         if (input.Keyboard.IsButtonJustPressed(Keys.Tab))
             showMap = !showMap;
 
+        #region Mouse
         dir += input.Mouse.XDelta * delta * 10;
         
+        if (input.Mouse.position.X < 20)
+            input.Mouse.SetPosition(SCREEN_RESOLUTION.X - 20, input.Mouse.position.Y);
+        if (input.Mouse.position.X >= SCREEN_RESOLUTION.X - 5)
+            input.Mouse.SetPosition(5, input.Mouse.position.Y);
+
         if (dir > 360)
             dir = 0;
         else if (dir < 0)
             dir = 360;
+        #endregion
         #endregion
 
         lastPos = pos;
@@ -186,10 +201,104 @@ public class Game1 : Game
     {
         GraphicsDevice.Clear(Color.Black);
 
-        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
+        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
 
-        Primitives.DrawBox(_spriteBatch, new Vector2(0, SCREEN_RESOLUTION.Y / 2), new Color(20, 20, 20), new Vector2(SCREEN_RESOLUTION.X, SCREEN_RESOLUTION.Y / 2));
+        #region Floorcast attempt DELETE LATER OR MOVE TO UPDATE
 
+        int mult = 4;
+        int floorWidth = SCREEN_RESOLUTION.X / mult;
+        int floorHeight = (SCREEN_RESOLUTION.Y) / mult;
+
+        float floorCheckLength = 2;
+        
+        double hypothenuse = Math.Sqrt(floorCheckLength * floorCheckLength + height * height);
+        double lookAngle = Math.Cos(height / hypothenuse);
+
+        float pixelScale = SCREEN_RESOLUTION.Y / FOV;
+
+        for (int y = 0; y < FOV / 2; y++)
+        {
+            
+            float value = Math.Abs(y * 0.5f / ((FOV / 2) / 2) - 1);
+
+            float angle = MathHelper.Lerp(0, FOV, value);
+
+            //double opposite = height * Math.Tan(MathHelper.ToRadians(angle));
+            double opposite = (height / SCREEN_RESOLUTION.Y) / (y - (SCREEN_RESOLUTION.Y / 2));
+            Console.WriteLine(opposite);
+
+            if (opposite < 0)
+                opposite = 0;
+                /*
+                float xAngle = MathHelper.Lerp(0, FOV, xValue);
+
+                double xOpposite = height * Math.Tan(MathHelper.ToRadians(xAngle));  
+                */
+                double floorStepY = opposite / SCREEN_RESOLUTION.Y;
+
+                Console.WriteLine(floorStepY);
+
+                for (int x = 0; x < SCREEN_RESOLUTION.X / mult; x++)
+                {
+                    int size = MAP_RESOLUTION.Y * (int)(pos.Y + floorStepY) + (int)pos.X;
+
+                    if (size > MAP_RESOLUTION.X * MAP_RESOLUTION.Y)
+                        size = (MAP_RESOLUTION.X * MAP_RESOLUTION.Y) - 1;
+                    
+                    else if (size < 0)
+                            size = 0;
+
+                    int index = MAP[size];
+
+                    Color color = Color.White;
+
+                    switch(index)
+                    {
+                        case 0:
+                            color = Color.BlueViolet;
+                            break;
+                        case 1:
+                            color = Color.Gray;
+                            break;
+                        case 2:
+                            color = Color.Red;
+                            break;
+                        default:
+                            color = Color.Beige;
+                            break;
+                    }   
+
+                        Primitives.DrawBox(_spriteBatch,
+                                            new Vector2(x * mult, 
+                                                    (SCREEN_RESOLUTION.Y / 2) + 
+                                                    (pixelScale * y)),
+                                                    color,
+                                                    Vector2.One * pixelScale);
+                }
+
+        }
+
+        #endregion
+        /*
+        int halfHeight = floorHeight / 2;
+
+        for (int y = halfHeight; y < floorHeight; y++)
+        {
+            for (int x = 0; x < floorWidth; x++)
+            {
+                Primitives.DrawTexturedBox(_spriteBatch, 
+                                            wall, 
+                                            new EMath.Vector2i(x, y), 
+                                            new EMath.Vector2i(1, 1), 
+                                            new Vector2(x * mult, y * mult), 
+                                            Vector2.Zero, 
+                                            Vector2.One * mult, 
+                                            Color.White);
+            
+            }
+        }
+        */
+        
         for (int r = 0; r < GAME_RESOLUTUION.X; r++)
         {
             Color color = (Color.White * 0.5f) * (1 / rayData[r].distance);
@@ -245,7 +354,7 @@ public class Game1 : Game
 
         player.Draw(_spriteBatch, pos * CELLSIZE, Color.White, dir, Vector2.One / 10);
         #endregion
-        
+
         _spriteBatch.End();
     }
 
@@ -260,5 +369,14 @@ public class Game1 : Game
             accumulatedDeltaTime = 0;
             FPS = 0;
         }
+    }
+
+    Vector2 GetScreenPosition(float x, float y)
+    {
+        float _x = x * 0.5f;
+        float _y = y * 0.5f;
+
+        return new Vector2(Math.Abs(-_x / (SCREEN_RESOLUTION.X / 2)),
+                           Math.Abs(_y / (SCREEN_RESOLUTION.Y / 2) - 1));
     }
 }

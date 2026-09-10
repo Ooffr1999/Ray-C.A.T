@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PipelineBuildEvent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
-  <SourceFile>/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/teodor.jpg</SourceFile>
-  <SourceTime>2026-06-08T20:31:27.3867863+02:00</SourceTime>
-  <DestFile>/home/ooffr/Documents/C#/WolfenStein-like/Content/bin/DesktopGL/Content/textures/teodor.xnb</DestFile>
-  <DestTime>2026-09-05T21:40:41.5671411+02:00</DestTime>
+  <SourceFile>/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/Debug1x1.png</SourceFile>
+  <SourceTime>2026-09-05T21:40:16.0687627+02:00</SourceTime>
+  <DestFile>/home/ooffr/Documents/C#/WolfenStein-like/Content/bin/DesktopGL/Content/textures/Debug1x1.xnb</DestFile>
+  <DestTime>2026-09-05T21:40:41.5471243+02:00</DestTime>
   <Importer>TextureImporter</Importer>
   <ImporterTime>2026-08-14T23:50:10+02:00</ImporterTime>
   <Processor>TextureProcessor</Processor>
