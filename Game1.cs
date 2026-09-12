@@ -205,100 +205,78 @@ public class Game1 : Game
 
         #region Floorcast attempt DELETE LATER OR MOVE TO UPDATE
 
-        int mult = 4;
+        CameraPlane plane = new CameraPlane(pos, dir, -0.20f, FOV);
+
+        int mult = 3;
         int floorWidth = SCREEN_RESOLUTION.X / mult;
         int floorHeight = (SCREEN_RESOLUTION.Y) / mult;
 
-        float floorCheckLength = 2;
+        int halfHeight = floorHeight / 2;
         
-        double hypothenuse = Math.Sqrt(floorCheckLength * floorCheckLength + height * height);
-        double lookAngle = Math.Cos(height / hypothenuse);
-
-        float pixelScale = SCREEN_RESOLUTION.Y / FOV;
-
-        for (int y = 0; y < FOV / 2; y++)
+        for (int y = 0; y < halfHeight; y++)
         {
+            int p = y - halfHeight;
+            float posZ = height * halfHeight;
+            float rowDistance = -posZ / p;;
+
+            Vector2 floor = plane.XlerpValueAcrossPlane(0);
             
-            float value = Math.Abs(y * 0.5f / ((FOV / 2) / 2) - 1);
+            //floor.X += rowDistance * forward.X / floorWidth;
+            //floor.X += rowDistance * plane.XlerpValueAcrossPlane((1f / halfHeight) * y).X - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / halfHeight) * y);
+            //floor.Y += rowDistance * plane.XlerpValueAcrossPlane((1f / floorWidth) * y).Y - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / halfHeight) * y);
+            floor.Y += rowDistance;
+            //floor.Y /= floorWidth;
+            for (int x = 0; x < floorWidth; x++)
+            {   
+                float widthLerped = (1f / floorWidth) * x;
 
-            float angle = MathHelper.Lerp(0, FOV, value);
+                //floor.X += rowDistance * plane.XlerpValueAcrossPlane((1f / floorWidth) * x).X - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / floorWidth) * x);
+                //floor.Y += rowDistance * plane.XlerpValueAcrossPlane((1f / floorWidth) * x).Y - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / floorWidth) * x);
+            
+                //floor.X /= floorWidth;
+                
 
-            //double opposite = height * Math.Tan(MathHelper.ToRadians(angle));
-            double opposite = (height / SCREEN_RESOLUTION.Y) / (y - (SCREEN_RESOLUTION.Y / 2));
-            Console.WriteLine(opposite);
+                floor.X = (plane.XlerpValueAcrossPlane(widthLerped).X - 
+                          MathHelper.Lerp(-rowDistance, rowDistance, widthLerped)) * forward.Y;
+                //floor.Y = plane.XlerpValueAcrossPlane(widthLerped).Y - 
+                //          MathHelper.Lerp(-rowDistance, rowDistance, widthLerped) * -forward.X;
+                
+               
+                
+                Color color = Color.Green;
 
-            if (opposite < 0)
-                opposite = 0;
-                /*
-                float xAngle = MathHelper.Lerp(0, FOV, xValue);
-
-                double xOpposite = height * Math.Tan(MathHelper.ToRadians(xAngle));  
-                */
-                double floorStepY = opposite / SCREEN_RESOLUTION.Y;
-
-                Console.WriteLine(floorStepY);
-
-                for (int x = 0; x < SCREEN_RESOLUTION.X / mult; x++)
+                if(floor.Y > -1 && 
+                   floor.Y < MAP_RESOLUTION.Y && 
+                   floor.X > -1 &&
+                   floor.X < MAP_RESOLUTION.X)
                 {
-                    int size = MAP_RESOLUTION.Y * (int)(pos.Y + floorStepY) + (int)pos.X;
-
-                    if (size > MAP_RESOLUTION.X * MAP_RESOLUTION.Y)
-                        size = (MAP_RESOLUTION.X * MAP_RESOLUTION.Y) - 1;
-                    
-                    else if (size < 0)
-                            size = 0;
-
-                    int index = MAP[size];
-
-                    Color color = Color.White;
-
-                    switch(index)
+                    switch (MAP[MAP_RESOLUTION.Y * (int)floor.Y + (int)floor.X])
                     {
                         case 0:
-                            color = Color.BlueViolet;
+                            color = Color.Green;
                             break;
-                        case 1:
-                            color = Color.Gray;
+                        case 1: 
+                            color = Color.Blue;
                             break;
                         case 2:
                             color = Color.Red;
                             break;
                         default:
-                            color = Color.Beige;
+                            color = Color.Azure;
                             break;
-                    }   
+                    }
 
-                        Primitives.DrawBox(_spriteBatch,
-                                            new Vector2(x * mult, 
-                                                    (SCREEN_RESOLUTION.Y / 2) + 
-                                                    (pixelScale * y)),
-                                                    color,
-                                                    Vector2.One * pixelScale);
+                    Primitives.DrawBox(_spriteBatch, 
+                                        new Vector2(x, floorHeight - y) * mult,
+                                        color, Vector2.One * mult);
                 }
-
+                
+            }
         }
 
         #endregion
         /*
-        int halfHeight = floorHeight / 2;
-
-        for (int y = halfHeight; y < floorHeight; y++)
-        {
-            for (int x = 0; x < floorWidth; x++)
-            {
-                Primitives.DrawTexturedBox(_spriteBatch, 
-                                            wall, 
-                                            new EMath.Vector2i(x, y), 
-                                            new EMath.Vector2i(1, 1), 
-                                            new Vector2(x * mult, y * mult), 
-                                            Vector2.Zero, 
-                                            Vector2.One * mult, 
-                                            Color.White);
-            
-            }
-        }
-        */
-        
+        #region Draw walls
         for (int r = 0; r < GAME_RESOLUTUION.X; r++)
         {
             Color color = (Color.White * 0.5f) * (1 / rayData[r].distance);
@@ -313,6 +291,8 @@ public class Game1 : Game
                                 
         }
         
+        #endregion
+        */
         #region Show Minimap
         
         if (!showMap)
@@ -346,13 +326,16 @@ public class Game1 : Game
                 Primitives.DrawBox(_spriteBatch, (new Vector2(x, y) * CELLSIZE), col, Vector2.One * (CELLSIZE - 1));
             }
         }
-
+        
+        /*
         for (int r = 0; r < GAME_RESOLUTUION.X; r++)
         {
             Primitives.DrawLine(_spriteBatch, pos * CELLSIZE, (pos + rayData[r].hitPosition) * CELLSIZE, 1f, Color.Red);
         }
-
+        */
+        //Draw player and camera plane
         player.Draw(_spriteBatch, pos * CELLSIZE, Color.White, dir, Vector2.One / 10);
+        Primitives.DrawLine(_spriteBatch, plane.leftPosition * CELLSIZE, plane.rightPosition * CELLSIZE, 2, Color.Violet);
         #endregion
 
         _spriteBatch.End();
