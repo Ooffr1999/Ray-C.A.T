@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics.X86;
@@ -59,9 +60,12 @@ public class Game1 : Game
 
     Texture2D wall;
     Texture2D brickWall;
+    Texture2D teo;
 
     //TEMP VALUES REMOVE LATER
     int[,] floorCheckTest;
+    Vector2[,] floorTexturePosition;
+    float[,] floorPointDistance;
 
     public Game1()
     {
@@ -86,7 +90,9 @@ public class Game1 : Game
         lineData = new Ray.LineData[GAME_RESOLUTUION.X];
 
         floorCheckTest = new int[GAME_RESOLUTUION.X, GAME_RESOLUTUION.Y];
-        //floorCheckTest = new int[GAME_RESOLUTUION.X];
+        floorPointDistance = new float[GAME_RESOLUTUION.X, GAME_RESOLUTUION.Y];
+        floorTexturePosition = new Vector2[GAME_RESOLUTUION.X, GAME_RESOLUTUION.Y];
+        
 
         input = new InputManager();
 
@@ -97,8 +103,10 @@ public class Game1 : Game
     {
         _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-        player = new Sprite(AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/teodor.jpg"));
-        wall = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/redbrick.png");
+        teo = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/teodor.jpg");
+        player = new Sprite(teo);
+        //wall = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/redbrick.png");
+        wall = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/teodor.jpg");
         brickWall = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/redbrick.png");
     }
 
@@ -150,30 +158,38 @@ public class Game1 : Game
         }
         #endregion
         
+        #region Floorcast
         for (int y = 0; y < GAME_RESOLUTUION.Y / 2; y++)
         {
             int p = y - GAME_RESOLUTUION.Y / 2;
-            // Vertical position of the camera.
-            float posZ = 0.5f * GAME_RESOLUTUION.Y;
-
+            float posZ = height * GAME_RESOLUTUION.Y;
             float rowDistance = Math.Abs(posZ / p);
-
-            float dist = 0;
-            dist += rowDistance;
-
-            //Console.WriteLine(rowDistance);
-                
-            float searchDistance = MathHelper.Lerp(0f, 4f, (1f / (GAME_RESOLUTUION.Y / 2f))  * y);
-            Console.WriteLine(searchDistance);
                 
             for (int x = 0; x < GAME_RESOLUTUION.X; x++)
             {
-                floorCheckTest[x, y] = Ray.Cast(pos, 
+                //Get ray data for floor computations
+                Ray.Raydata data = Ray.Cast(pos, 
                                             startCastDir + (FOVincrement * x), 
                                             rowDistance, 
-                                            MAP, MAP_RESOLUTION).hitData;
+                                            MAP, MAP_RESOLUTION);
+
+                #region Get floor coordinates
+                floorCheckTest[x, y] = data.hitData;
+                floorPointDistance[x, y] = data.distance;
+                #endregion
+
+                #region Get floor Textures Coordinates
+                Vector2 floorCheckCell = new Vector2(EMath.FloorToInt(data.hitPosition.X), 
+                                                     EMath.FloorToInt(data.hitPosition.Y));
+
+                Vector2 texturePosition = data.hitPosition - floorCheckCell;
+
+                floorTexturePosition[x, y] = new Vector2((int)wall.Width * (data.hitPosition.X - floorCheckCell.X),
+                                                        (int)wall.Height * (data.hitPosition.Y - floorCheckCell.Y));
+                #endregion
             }
         }
+        #endregion
 
         #region Keyboard
         KeyboardState state = Keyboard.GetState();
@@ -198,7 +214,12 @@ public class Game1 : Game
             pos += nextFramePosition;
 
         if (input.Keyboard.IsButtonJustPressed(Keys.Tab))
+        {
+            Exit();
             showMap = !showMap;
+        }
+
+        if (input.Keyboard.IsButtonJustReleased(Keys.Tab))
 
         #region Mouse
         dir += input.Mouse.XDelta * delta * 10;
@@ -216,39 +237,44 @@ public class Game1 : Game
         #endregion
 
         lastPos = pos;
-
-        //base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
         GraphicsDevice.Clear(Color.Black);
 
-        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
+        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
         
-        for (int y = 0; y < GAME_RESOLUTUION.Y; y++)
+        //Draw floor and ceiling
+        for (int y = 0; y < GAME_RESOLUTUION.Y / 2; y++)
         {
             for (int x = 0; x < GAME_RESOLUTUION.X; x++)
-            {
-                Color floorTempColor = new Color();
+            {        
+                //Get distance shade   
+                Color floorShade = (Color.White * 0.5f) * (1 / floorPointDistance[x, y]);
+                floorShade.A = 255;
 
-                switch(floorCheckTest[x, y])
-                {
-                    case 0: 
-                        floorTempColor = Color.White;
-                        break;
-                    case 1: 
-                        floorTempColor = Color.Green;
-                        break;
-                    default:
-                        floorTempColor = Color.Orange;
-                        break;
-                }
-
-                Primitives.DrawBox(_spriteBatch, new Vector2(x * 6f, 
-                                                            SCREEN_RESOLUTION.Y - y * 4.5f), 
-                                                            floorTempColor, 
-                                                            Vector2.One * 5);    
+                //Texture floor
+                Primitives.DrawTexturedBox(_spriteBatch, 
+                                                wall, 
+                                                new EMath.Vector2i((int)floorTexturePosition[x, y].X, (int)floorTexturePosition[x, y].Y), 
+                                                new EMath.Vector2i(1, 1), 
+                                                new Vector2(x * 6f,
+                                                SCREEN_RESOLUTION.Y - y * 4.5f),
+                                                Vector2.One * 0.5f,
+                                                Vector2.One * 6,
+                                                floorShade);
+                
+                //Texture ceiling
+                Primitives.DrawTexturedBox(_spriteBatch, 
+                                                wall, 
+                                                new EMath.Vector2i((int)floorTexturePosition[x, y].X, (int)floorTexturePosition[x, y].Y), 
+                                                new EMath.Vector2i(1, 1), 
+                                                new Vector2(x * 6f,
+                                                0 + y * 4.5f),
+                                                Vector2.One * 0.5f,
+                                                Vector2.One * 6,
+                                                floorShade);
             }
         }
         
