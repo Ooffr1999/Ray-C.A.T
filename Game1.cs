@@ -16,7 +16,7 @@ public class Game1 : Game
 
     EMath.Vector2i MAP_RESOLUTION = new EMath.Vector2i(8, 8);
     
-    EMath.Vector2i GAME_RESOLUTUION = new EMath.Vector2i(640, 480);
+    EMath.Vector2i GAME_RESOLUTUION = new EMath.Vector2i(320, 240);
     EMath.Vector2i SCREEN_RESOLUTION = new EMath.Vector2i(1920, 1080);
 
     static int[] MAP = 
@@ -60,6 +60,9 @@ public class Game1 : Game
     Texture2D wall;
     Texture2D brickWall;
 
+    //TEMP VALUES REMOVE LATER
+    int[,] floorCheckTest;
+
     public Game1()
     {
         _graphics = new GraphicsDeviceManager(this);
@@ -81,6 +84,9 @@ public class Game1 : Game
 
         rayData = new Ray.Raydata[GAME_RESOLUTUION.X];
         lineData = new Ray.LineData[GAME_RESOLUTUION.X];
+
+        floorCheckTest = new int[GAME_RESOLUTUION.X, GAME_RESOLUTUION.Y];
+        //floorCheckTest = new int[GAME_RESOLUTUION.X];
 
         input = new InputManager();
 
@@ -115,7 +121,9 @@ public class Game1 : Game
         for (int r = 0; r < GAME_RESOLUTUION.X; r++)
         {
             #region Calculate Line size
-            rayData[r] = Ray.Cast(pos, startCastDir + FOVincrement * r, MAP, MAP_RESOLUTION);
+            CameraPlane plane = new CameraPlane(pos, dir, 0.25f, FOV);
+
+            rayData[r] = Ray.WallCast(pos, startCastDir + FOVincrement * r, MAP, MAP_RESOLUTION);
 
             lineData[r].lineWidth = SCREEN_RESOLUTION.X / GAME_RESOLUTUION.X;
             lineData[r].lineHeight = SCREEN_RESOLUTION.Y / rayData[r].distance;
@@ -139,19 +147,34 @@ public class Game1 : Game
                 lineData[r].texX = wall.Width - lineData[r].texX - 1;
             
             #endregion
-
-            switch (rayData[r].hitSide)
-            {
-                case 0:
-                    lineData[r].color = Color.LightBlue;
-                    break;
-                case 1: 
-                    lineData[r].color = Color.Blue;
-                    break;
-            }
         }
         #endregion
         
+        for (int y = 0; y < GAME_RESOLUTUION.Y / 2; y++)
+        {
+            int p = y - GAME_RESOLUTUION.Y / 2;
+            // Vertical position of the camera.
+            float posZ = 0.5f * GAME_RESOLUTUION.Y;
+
+            float rowDistance = Math.Abs(posZ / p);
+
+            float dist = 0;
+            dist += rowDistance;
+
+            //Console.WriteLine(rowDistance);
+                
+            float searchDistance = MathHelper.Lerp(0f, 4f, (1f / (GAME_RESOLUTUION.Y / 2f))  * y);
+            Console.WriteLine(searchDistance);
+                
+            for (int x = 0; x < GAME_RESOLUTUION.X; x++)
+            {
+                floorCheckTest[x, y] = Ray.Cast(pos, 
+                                            startCastDir + (FOVincrement * x), 
+                                            rowDistance, 
+                                            MAP, MAP_RESOLUTION).hitData;
+            }
+        }
+
         #region Keyboard
         KeyboardState state = Keyboard.GetState();
 
@@ -202,80 +225,33 @@ public class Game1 : Game
         GraphicsDevice.Clear(Color.Black);
 
         _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointWrap);
-
-        #region Floorcast attempt DELETE LATER OR MOVE TO UPDATE
-
-        CameraPlane plane = new CameraPlane(pos, dir, -0.20f, FOV);
-
-        int mult = 3;
-        int floorWidth = SCREEN_RESOLUTION.X / mult;
-        int floorHeight = (SCREEN_RESOLUTION.Y) / mult;
-
-        int halfHeight = floorHeight / 2;
         
-        for (int y = 0; y < halfHeight; y++)
+        for (int y = 0; y < GAME_RESOLUTUION.Y; y++)
         {
-            int p = y - halfHeight;
-            float posZ = height * halfHeight;
-            float rowDistance = -posZ / p;;
+            for (int x = 0; x < GAME_RESOLUTUION.X; x++)
+            {
+                Color floorTempColor = new Color();
 
-            Vector2 floor = plane.XlerpValueAcrossPlane(0);
-            
-            //floor.X += rowDistance * forward.X / floorWidth;
-            //floor.X += rowDistance * plane.XlerpValueAcrossPlane((1f / halfHeight) * y).X - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / halfHeight) * y);
-            //floor.Y += rowDistance * plane.XlerpValueAcrossPlane((1f / floorWidth) * y).Y - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / halfHeight) * y);
-            floor.Y += rowDistance;
-            //floor.Y /= floorWidth;
-            for (int x = 0; x < floorWidth; x++)
-            {   
-                float widthLerped = (1f / floorWidth) * x;
-
-                //floor.X += rowDistance * plane.XlerpValueAcrossPlane((1f / floorWidth) * x).X - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / floorWidth) * x);
-                //floor.Y += rowDistance * plane.XlerpValueAcrossPlane((1f / floorWidth) * x).Y - MathHelper.Lerp(-rowDistance * 0.5f, rowDistance * 0.5f, (1f / floorWidth) * x);
-            
-                //floor.X /= floorWidth;
-                
-
-                floor.X = (plane.XlerpValueAcrossPlane(widthLerped).X - 
-                          MathHelper.Lerp(-rowDistance, rowDistance, widthLerped)) * forward.Y;
-                //floor.Y = plane.XlerpValueAcrossPlane(widthLerped).Y - 
-                //          MathHelper.Lerp(-rowDistance, rowDistance, widthLerped) * -forward.X;
-                
-               
-                
-                Color color = Color.Green;
-
-                if(floor.Y > -1 && 
-                   floor.Y < MAP_RESOLUTION.Y && 
-                   floor.X > -1 &&
-                   floor.X < MAP_RESOLUTION.X)
+                switch(floorCheckTest[x, y])
                 {
-                    switch (MAP[MAP_RESOLUTION.Y * (int)floor.Y + (int)floor.X])
-                    {
-                        case 0:
-                            color = Color.Green;
-                            break;
-                        case 1: 
-                            color = Color.Blue;
-                            break;
-                        case 2:
-                            color = Color.Red;
-                            break;
-                        default:
-                            color = Color.Azure;
-                            break;
-                    }
-
-                    Primitives.DrawBox(_spriteBatch, 
-                                        new Vector2(x, floorHeight - y) * mult,
-                                        color, Vector2.One * mult);
+                    case 0: 
+                        floorTempColor = Color.White;
+                        break;
+                    case 1: 
+                        floorTempColor = Color.Green;
+                        break;
+                    default:
+                        floorTempColor = Color.Orange;
+                        break;
                 }
-                
+
+                Primitives.DrawBox(_spriteBatch, new Vector2(x * 6f, 
+                                                            SCREEN_RESOLUTION.Y - y * 4.5f), 
+                                                            floorTempColor, 
+                                                            Vector2.One * 5);    
             }
         }
-
-        #endregion
-        /*
+        
         #region Draw walls
         for (int r = 0; r < GAME_RESOLUTUION.X; r++)
         {
@@ -292,7 +268,7 @@ public class Game1 : Game
         }
         
         #endregion
-        */
+        
         #region Show Minimap
         
         if (!showMap)
@@ -327,15 +303,15 @@ public class Game1 : Game
             }
         }
         
-        /*
+        
         for (int r = 0; r < GAME_RESOLUTUION.X; r++)
         {
             Primitives.DrawLine(_spriteBatch, pos * CELLSIZE, (pos + rayData[r].hitPosition) * CELLSIZE, 1f, Color.Red);
         }
-        */
+        
         //Draw player and camera plane
         player.Draw(_spriteBatch, pos * CELLSIZE, Color.White, dir, Vector2.One / 10);
-        Primitives.DrawLine(_spriteBatch, plane.leftPosition * CELLSIZE, plane.rightPosition * CELLSIZE, 2, Color.Violet);
+
         #endregion
 
         _spriteBatch.End();
@@ -361,5 +337,20 @@ public class Game1 : Game
 
         return new Vector2(Math.Abs(-_x / (SCREEN_RESOLUTION.X / 2)),
                            Math.Abs(_y / (SCREEN_RESOLUTION.Y / 2) - 1));
+    }
+
+    Vector2 rotateAround(Vector2 center, Vector2 point, float angle)
+    {
+        float angleInRadians = MathHelper.ToRadians(angle);
+
+        float cos = (float)Math.Cos(angleInRadians);
+        float sin = (float)Math.Sin(angleInRadians);
+        
+        Vector2 direction = point - center;
+        
+        float rotatedX = direction.X * cos - direction.Y * sin;
+        float rotatedY = direction.X * sin + direction.Y * cos;
+        
+        return new Vector2(rotatedX, rotatedY) + center;
     }
 }

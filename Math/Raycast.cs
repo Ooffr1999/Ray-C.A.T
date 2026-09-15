@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework;
 
 public static class Ray
 {
-    public static Raydata Cast(Vector2 pos, double direction, int[] MAP, EMath.Vector2i MAP_RESOLUTION)
+    public static Raydata WallCast(Vector2 pos, double direction, int[] MAP, EMath.Vector2i MAP_RESOLUTION)
         {
             Raydata data = new Raydata();
 
@@ -57,6 +57,27 @@ public static class Ray
             return data;
         }
 
+    public static Raydata Cast(Vector2 pos, double direction, double distance, int [] MAP, EMath.Vector2i MAP_RESOLUTION)
+    {
+        Raydata data = new Raydata();
+
+        data.direction = EMath.getDirection(MathHelper.ToRadians((float)direction));
+
+        data.distance = (float)distance;
+
+        data.hitPosition = pos + (data.direction * data.distance);
+
+        if (
+            data.hitPosition.X >= 0 &&
+            data.hitPosition.X < MAP_RESOLUTION.X &&
+            data.hitPosition.Y >= 0 &&
+            data.hitPosition.Y < MAP_RESOLUTION.Y
+        )
+        {
+            data.hitData = MAP[MAP_RESOLUTION.Y * (int)data.hitPosition.Y + (int)data.hitPosition.X];
+        }
+        return data;
+    }
     public struct Raydata
     {
         public float distance;
