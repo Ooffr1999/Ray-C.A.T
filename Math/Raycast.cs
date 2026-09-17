@@ -1,9 +1,10 @@
 using System;
 using Microsoft.Xna.Framework;
+using Custom;
 
 public static class Ray
 {
-    public static Raydata WallCast(Vector2 pos, double direction, int[] MAP, EMath.Vector2i MAP_RESOLUTION)
+    public static Raydata WallCast(Vector2 pos, double direction, Map MAP, Vector2i MAP_RESOLUTION)
         {
             Raydata data = new Raydata();
 
@@ -46,9 +47,16 @@ public static class Ray
                     data.hitSide = 1;
                     rayLength.Y += rayUnitStepSize.Y;
                 }
-
-                data.hitData = MAP[mapCheck.Y * MAP_RESOLUTION.Y + mapCheck.X];
-                if (data.hitData == 1)
+                
+                if (mapCheck.X < 0 ||
+                    mapCheck.X >= MAP_RESOLUTION.X ||
+                    mapCheck.Y < 0 ||
+                    mapCheck.Y >= MAP_RESOLUTION.Y)
+                    break;
+                
+                data.hitData = MAP.data[mapCheck.X, mapCheck.Y];
+                
+                if (MAP.cells[data.hitData].cellType == CellType.Wall)
                     break;
             }
 
@@ -57,7 +65,7 @@ public static class Ray
             return data;
         }
 
-    public static Raydata Cast(Vector2 pos, double direction, double distance, int [] MAP, EMath.Vector2i MAP_RESOLUTION)
+    public static Raydata Cast(Vector2 pos, double direction, double distance, Map MAP, Vector2i MAP_RESOLUTION)
     {
         Raydata data = new Raydata();
 
@@ -74,7 +82,7 @@ public static class Ray
             data.hitPosition.Y < MAP_RESOLUTION.Y
         )
         {
-            data.hitData = MAP[MAP_RESOLUTION.Y * (int)data.hitPosition.Y + (int)data.hitPosition.X];
+            data.hitData = MAP.data[(int)data.hitPosition.X, (int)data.hitPosition.Y];
         }
         return data;
     }
