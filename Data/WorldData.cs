@@ -23,7 +23,7 @@ public class Map
     public Cell[] cells {get; set;}
 }
 
-public enum CellType {Floor, FloorCeil, Wall}
+public enum CellType {Floor, FloorCeil, Wall, Sprite}
 
 public class Cell
 {

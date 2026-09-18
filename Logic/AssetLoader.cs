@@ -9,7 +9,7 @@ public static class AssetLoader
         Texture2D texture;
 
         FileStream filestream = new FileStream(fileName, FileMode.Open);
-        texture = Texture2D.FromStream(Game1._graphics.GraphicsDevice, filestream);
+        texture = Texture2D.FromStream(RayCatCore._graphics.GraphicsDevice, filestream);
         filestream.Dispose();
 
         return texture;

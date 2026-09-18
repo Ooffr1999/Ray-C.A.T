@@ -5,50 +5,54 @@ using Microsoft.Xna.Framework.Graphics;
 public class Render
 {
     public float lightStrength {get; set;}
-
+    
     SpriteBatch batch;
+    Calculate calcMap;
 
-    public Render (SpriteBatch _batch)
+    public Render (GameServiceContainer serviceContainer, Calculate _calcMap)
     {
-        batch = _batch;
+        batch = serviceContainer.GetService<SpriteBatch>();
+        calcMap = _calcMap;
         lightStrength = 0.5f;
     }
 
-    public void Floors(Map MAP, Vector2i Game_Res, Vector2i Screen_Res, int[,] floorCheck, Vector2[,] floorTexturePosition, float[,] floorPointDistance)
+    public void Floors()
     {
-        for (int y = 0; y < Game_Res.Y / 2; y++)
+        for (int y = 0; y < calcMap.GAME_RES.Y / 2; y++)
         {
-            for (int x = 0; x < Game_Res.X; x++)
+            for (int x = 0; x < calcMap.GAME_RES.X; x++)
             {   
-                if (MAP.cells[floorCheck[x, y]].cellType != CellType.Wall)
+                if (calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].cellType != CellType.Wall)
                 {
-                    Texture2D tex = MAP.cells[floorCheck[x, y]].tex;
-                    Color colorShade = MAP.cells[floorCheck[x, y]].color;
+                    Texture2D tex = calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].tex;
+                    Color colorShade = calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].color;
                     
                     //Get distance shade   
-                    Color floorShade = (colorShade * lightStrength) * (1 / floorPointDistance[x, y]);
+                    Color floorShade = (colorShade * lightStrength) * (1 / calcMap.floorPlanePointsDistance[x, y]);
                     floorShade.A = 255;
 
                     //Texture floor
                     
                     Primitives.DrawTexturedBox(batch, 
                                                     tex, 
-                                                    new EMath.Vector2i((int)floorTexturePosition[x, y].X, (int)floorTexturePosition[x, y].Y), 
+                                                    new EMath.Vector2i((int)calcMap.floorPlaneTexturePosition[x, y].X, 
+                                                                       (int)calcMap.floorPlaneTexturePosition[x, y].Y), 
                                                     new EMath.Vector2i(1, 1), 
                                                     new Vector2(x * 6f,
-                                                    Screen_Res.Y - y * 4.5f),
+                                                    calcMap.SCREEN_RES.Y - y * 4.5f),
                                                     Vector2.One * 0.5f,
                                                     Vector2.One * 6,
                                                     floorShade);
                                                     
                                                     
                     
-                    if (MAP.cells[floorCheck[x, y]].cellType == CellType.FloorCeil)
+                    if (calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].cellType == CellType.FloorCeil)
                     {
                     //Texture ceiling
                     Primitives.DrawTexturedBox(batch, 
                                                     tex, 
-                                                    new EMath.Vector2i((int)floorTexturePosition[x, y].X, (int)floorTexturePosition[x, y].Y), 
+                                                    new EMath.Vector2i( (int)calcMap.floorPlaneTexturePosition[x, y].X, 
+                                                                        (int)calcMap.floorPlaneTexturePosition[x, y].Y), 
                                                     new EMath.Vector2i(1, 1), 
                                                     new Vector2(x * 6f,
                                                     0 + y * 4.5f),
@@ -61,19 +65,19 @@ public class Render
         }
     }
 
-    public void Walls(Map MAP, Ray.Raydata[] rayData, Ray.LineData[] lineData, int xRes)
+    public void Walls()
     {
-        for (int r = 0; r < xRes; r++)
+        for (int r = 0; r < calcMap.GAME_RES.X; r++)
         {
-            Cell cell = MAP.cells[rayData[r].hitData];
+            Cell cell = calcMap.MAP.cells[calcMap.rayData[r].hitData];
 
-            Color color = (cell.color * lightStrength) * (1 / rayData[r].distance);
+            Color color = (cell.color * lightStrength) * (1 / calcMap.rayData[r].distance);
             color.A = 255;
 
-            Primitives.DrawTexturedLine(batch, cell.tex, (int)lineData[r].texX, 0,
-                                new Vector2(lineData[r].lineWidth * r, lineData[r].drawStart), 
-                                new Vector2(lineData[r].lineWidth * r, lineData[r].drawEnd), 
-                                lineData[r].lineWidth, 
+            Primitives.DrawTexturedLine(batch, cell.tex, (int)calcMap.lineData[r].texX, 0,
+                                new Vector2(calcMap.lineData[r].lineWidth * r, calcMap.lineData[r].drawStart), 
+                                new Vector2(calcMap.lineData[r].lineWidth * r, calcMap.lineData[r].drawEnd), 
+                                calcMap.lineData[r].lineWidth, 
                                 color,
                                 0);
                                 

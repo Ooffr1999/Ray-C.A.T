@@ -108,7 +108,10 @@ public class MouseInput
 
     public void SetPosition(int x, int y)
     {
-        Mouse.SetPosition(x, y);
+        int _x = x;
+
+        Mouse.SetPosition(_x, y);
+
         currentState = new MouseState(
             x,
             y,
