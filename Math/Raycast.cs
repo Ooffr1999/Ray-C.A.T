@@ -28,8 +28,6 @@ public static class Ray
                 rayLength.Y = roFract.Y * rayUnitStepSize.Y;
             else rayLength.Y = (1 - roFract.Y) * rayUnitStepSize.Y;
 
-            //Console.WriteLine(mapCheck);
-
             for (int i = 0; i < 50; i++)
             {
                 if (rayLength.X < rayLength.Y)

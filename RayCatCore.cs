@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using Custom;
 using RayCat.Data;
 using RayCat.Draw;
+using System.Threading;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -18,6 +19,8 @@ public class RayCatCore : Game
     public static InputManager _input;
 
     public Map MAP;
+
+    //TODO: Add threading to the calculation and drawing
 
     public Calculate _calculateMap;
     
@@ -89,9 +92,7 @@ public class RayCatCore : Game
         _calculateMap.Walls();
         
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
-        {
             Services.GetService<List<Entity>>()[i].Update(_deltaTime);
-        }
 
         base.Update(gameTime);
     }
@@ -102,28 +103,19 @@ public class RayCatCore : Game
 
         GraphicsDevice.Clear(Color.Black);
 
-        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.PointClamp);
+        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         
         Render render = new Render(Services, _calculateMap);
 
         render.Floors();
-        //render.Walls();
+        render.Walls();
 
         Minimap.DrawMap();                              //Draws the minimap
         Minimap.DrawPlayer(player, 90);                 //Draws player onto the minimap
 
-        tempDraw();
-
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
-        {
-            //Services.GetService<List<Entity>>()[i].Draw();
-        }
+            Services.GetService<List<Entity>>()[i].DrawToScreen(_spriteBatch, player, WindowResolution);
 
         _spriteBatch.End();
-    }
-
-    public virtual void tempDraw()
-    {
-        
     }
 }

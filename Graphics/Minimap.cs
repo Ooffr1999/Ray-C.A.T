@@ -64,6 +64,7 @@ public class Minimap
     {
         if (Hide)
             return;
+        
         //for (int r = 0; r < GameResolution.X; r++)
         //    Primitives.DrawLine(spriteBatch, player.position * MAP.cellSize, (player.position + _calculateMap.rayData[r].hitPosition) * MAP.cellSize, 1f, Color.Red);
         

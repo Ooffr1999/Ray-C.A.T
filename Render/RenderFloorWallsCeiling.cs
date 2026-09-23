@@ -83,4 +83,9 @@ public class Render
                                 
         }
     }
+
+    public void Sprite(Sprite sprite, Vector2 pos)
+    {
+
+    }
 }

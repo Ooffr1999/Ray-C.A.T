@@ -1,3 +1,4 @@
+using System;
 using System.Buffers.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -63,10 +64,15 @@ public class Player : Entity
     {
         direction += input.Mouse.XDelta * deltaTime * turnSpeedModifier;                               //Add mouse input to direction.
         
-        if (input.Mouse.position.X >= 1915)                                             //Clamp direction between 0 and 360.                                            
+        if (input.Mouse.position.X >= 1915)                                                                                        
             input.Mouse.SetPosition(10, input.Mouse.position.Y);
         else if (input.Mouse.position.X <= 5)
             input.Mouse.SetPosition(1910, input.Mouse.position.Y);
+
+        if (direction > 180)
+            direction = -180;
+        else if (direction < -180)
+            direction = 180;
     }
     
 }
