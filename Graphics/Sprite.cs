@@ -6,6 +6,7 @@ public class Sprite
 {
     public Texture2D texture  {get; set;}
     public SpriteEffects spriteEffects {get; set;}
+    public float layerDepth {get; set;}
 
     public Sprite() { }
 
@@ -22,7 +23,7 @@ public class Sprite
     public void Draw(SpriteBatch batch, Vector2 location, Color color, float rotation, Vector2 scale)
     {
         Vector2 origin = new Vector2(texture.Width / 2, texture.Height / 2);
-        batch.Draw(texture, location, null, color, MathHelper.ToRadians(rotation), origin, scale, spriteEffects, 0.0f);
+        batch.Draw(texture, location, null, color, MathHelper.ToRadians(rotation), origin, scale, spriteEffects, layerDepth);
     }
 
     public void Draw(SpriteBatch batch, Vector2 location, Color color, float rotation, Vector2 scale, float layer)

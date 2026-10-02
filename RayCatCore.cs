@@ -5,6 +5,8 @@ using RayCat.Draw;
 using System.Threading;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
+using System.Linq;
+using RayCat.Logic;
 
 //The RayCat Engine core. 
 //This is the file that runs the game. It is designed to be a sandbox that files inherriting will build upon.
@@ -38,13 +40,15 @@ public class RayCatCore : Game
 
     public Minimap Minimap;
 
+    SimpleFps fps;
+
     public RayCatCore()
     {
         _graphics = new GraphicsDeviceManager(this);
         Content.RootDirectory = "Content";
         IsMouseVisible = false;
 
-        //Window.IsBorderless = true;
+        Window.IsBorderless = true;
     }
 
     //Initialize the most important toold
@@ -54,6 +58,8 @@ public class RayCatCore : Game
         _graphics.PreferredBackBufferHeight = WindowResolution.Y;       //Set window height
         _graphics.ApplyChanges();                                       //Apply the changes
                                                                         //TODO: Add a modular way to set these things in game
+
+        IsMouseVisible = true;
 
         _input = new InputManager();                                    //Create the inputmanager that drives button clicks.
         Services.AddService(typeof(List<Entity>), _entities);           //Add a list of entities to the GameServiceManager
@@ -65,6 +71,8 @@ public class RayCatCore : Game
     {
         base.LoadContent();
         
+        fps = new SimpleFps();
+
         _spriteBatch = new SpriteBatch(GraphicsDevice);                 //Create the spritebatch
         Services.AddService(typeof(SpriteBatch), _spriteBatch);         //Add spritebatch to the Servicemanager
 
@@ -82,12 +90,13 @@ public class RayCatCore : Game
 
     protected override void Update(GameTime gameTime)
     {
+        fps.Update(gameTime);
         _deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
-        _input.Update(gameTime);
+        _input.Update(gameTime); 
 
         //Calculate Map
         _calculateMap = new Calculate(player, FOV, MAP, GameResolution, WindowResolution);
-        
+
         _calculateMap.Floor();
         _calculateMap.Walls();
         
@@ -103,19 +112,40 @@ public class RayCatCore : Game
 
         GraphicsDevice.Clear(Color.Black);
 
-        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
+        _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, samplerState: SamplerState.PointClamp);
         
-        Render render = new Render(Services, _calculateMap);
+        Texture2D texture = new Texture2D(_graphics.GraphicsDevice, GameResolution.X, GameResolution.Y);
+        Color[] colorData = new Color[GameResolution.X * GameResolution.Y];
 
+        for (int i = 0; i < colorData.Length; i++)
+        {
+            if (i % 2 == 0)
+                colorData[i] = Color.Pink;
+            else colorData[i] = Color.Red;
+        }
+
+        TextRenderer fpsText = new TextRenderer(_spriteBatch, AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Fonts/square_6x6.png"));
+
+        Render render = new Render(Services, _calculateMap);
+        
         render.Floors();
         render.Walls();
 
+        fpsText.text = fps.msg;
+        fpsText.SetArea(new Vector2(1000, 3), 500, 100);
+        fpsText.DrawBoundaryBox();
+        fpsText.Draw();
+
         Minimap.DrawMap();                              //Draws the minimap
         Minimap.DrawPlayer(player, 90);                 //Draws player onto the minimap
+        _spriteBatch.End();
 
+        _spriteBatch.Begin(SpriteSortMode.BackToFront, samplerState:SamplerState.PointClamp);
+        //TODO: Fix the sprite drawing algorithm to fix the jumps when its right of the player
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
             Services.GetService<List<Entity>>()[i].DrawToScreen(_spriteBatch, player, WindowResolution);
-
+                                    
         _spriteBatch.End();
+        
     }
 }

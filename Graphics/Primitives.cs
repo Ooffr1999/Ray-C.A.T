@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using Custom;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using WolfenStein_like;
@@ -32,7 +33,7 @@ public static class Primitives{
         DrawBox(batch, location, color, 0.0f, scale, layer);
     }
 
-    public static void DrawTexturedBox(SpriteBatch batch, Texture2D texture, EMath.Vector2i texturePosition, EMath.Vector2i textureDimension, Vector2 position, Vector2 origin, Vector2 scale, Color color)
+    public static void DrawTexturedBox(SpriteBatch batch, Texture2D texture, Vector2i texturePosition, Vector2i textureDimension, Vector2 position, Vector2 origin, Vector2 scale, Color color, float layerDepth)
     {
         TextureRegion box = new TextureRegion(texture, texturePosition.X, texturePosition.Y, textureDimension.X, textureDimension.Y);
 
@@ -44,7 +45,7 @@ public static class Primitives{
             new Vector2(scale.X / textureDimension.X, scale.Y / textureDimension.Y),
             //scale,
             SpriteEffects.None, 
-            0.0f);
+            layerDepth);
     }
 
     #region Draw Untextured Line
@@ -99,16 +100,14 @@ public static class Primitives{
         float angle = (float)Math.Atan2(direction.Y, direction.X);
         
         TextureRegion line = new TextureRegion(texture, x, y, (int)Math.Clamp(thicknessModifier, 0, texture.Width), texture.Height);
-        
+
         line.Draw(batch, 
                     start, 
                     color, 
                     0, 
                     Vector2.Zero, 
-                    new Vector2(1, (float)(_lineThickness * distance)),
-                    SpriteEffects.None, 
-                    0.0f);
-        
+                    new Vector2(1 * 13, (float)(_lineThickness * distance)),
+                    SpriteEffects.None);
     }
     #endregion
 }

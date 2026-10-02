@@ -51,7 +51,10 @@ public class Entity
     {
         float positionToScreenModifier = float.RadiansToDegrees((float)Math.Atan2(position.Y - player.position.Y, position.X - player.position.X));
 
+        //distToPlayer = Vector2.Distance(position, player.position);
+
         Draw(_batch,
+            player,
             new Vector2(WindowResolution.X / 2 - (player.direction - positionToScreenModifier) * 21.5f, WindowResolution.Y / 2) + offset,
             spriteColor,
             scale / Vector2.Distance(player.position, position)
@@ -60,9 +63,9 @@ public class Entity
     #endregion
 
     #region Draw
-    public void Draw(SpriteBatch _batch, Vector2 pos, Color color, Vector2 scale)
+    public void Draw(SpriteBatch _batch, Player player, Vector2 pos, Color color, Vector2 scale)
     {
-        sprite.Draw(_batch, pos, color, 0, scale);
+        sprite.Draw(_batch, pos, color, 0, scale, Vector2.Distance(position, player.position) / 100);
     }
 
     public void Draw(SpriteBatch _batch, Vector2 pos, Vector2 scale)

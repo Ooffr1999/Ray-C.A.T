@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("WolfenStein-like")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+34e927e6838a39c003b0b88c54fb7b1926b8bb52")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+745d8097f08a9b5d71b3a707b32d163cfed49cc4")]
 [assembly: System.Reflection.AssemblyProductAttribute("WolfenStein-like")]
 [assembly: System.Reflection.AssemblyTitleAttribute("WolfenStein-like")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

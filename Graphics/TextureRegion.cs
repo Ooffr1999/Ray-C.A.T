@@ -17,7 +17,7 @@ public class TextureRegion
     public TextureRegion(Texture2D tex, int x, int y, int width, int height)
     {
         texture = tex;
-        sourceRectangle = new Microsoft.Xna.Framework.Rectangle(x, y, width, height);
+        sourceRectangle = new Rectangle(x, y, width, height);
     }
 
     public void Draw(SpriteBatch batch, Vector2 position, Color color)

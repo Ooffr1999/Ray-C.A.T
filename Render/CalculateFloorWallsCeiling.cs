@@ -43,28 +43,31 @@ public class Calculate
 
         for (int r = 0; r < GAME_RES.X; r++)
         {
-            CameraPlane plane = new CameraPlane(player.position, player.direction, 0.25f, FOV);
-
+            //Raycast and get data
             rayData[r] = Ray.WallCast(player.position, InitialCastDirection + CastFieldOfViewPerCycleIncrement * r, MAP, MAP.resolution);
 
-            lineData[r].lineWidth = SCREEN_RES.X / GAME_RES.X;
-            lineData[r].lineHeight = SCREEN_RES.Y / rayData[r].distance;
+            lineData[r].lineWidth = SCREEN_RES.X / GAME_RES.X;                                  //Set width of line
+            lineData[r].lineHeight = SCREEN_RES.Y / rayData[r].distance;                        //Set length of line
 
-            lineData[r].drawStart = -lineData[r].lineHeight / 2 + SCREEN_RES.Y / 2;
-            lineData[r].drawEnd = lineData[r].lineHeight / 2 + SCREEN_RES.Y / 2;
+            lineData[r].drawStart = -lineData[r].lineHeight / 2 + SCREEN_RES.Y / 2;             //Set the position the line is drawn from
+            lineData[r].drawEnd = lineData[r].lineHeight / 2 + SCREEN_RES.Y / 2;                //Set the position the line is drawn to
 
             double wallX;
             
             if (rayData[r].hitSide == 0)
                 wallX = player.position.Y + rayData[r].distance * rayData[r].direction.Y;
             else wallX = player.position.X + rayData[r].distance * rayData[r].direction.X;
+            
             wallX -= Math.Floor(wallX);
 
-            lineData[r].texX = (int)(wallX * (double)MAP.cells[rayData[r].hitData].tex.Width);
+            lineData[r].texX = wallX * MAP.cells[rayData[r].hitData].tex.Width;
+            
             if (rayData[r].hitSide == 0 && rayData[r].direction.X > 0)
                 lineData[r].texX = MAP.cells[rayData[r].hitData].tex.Width - lineData[r].texX - 1;
             if (rayData[r].hitSide == 1 && rayData[r].direction.Y < 0)
                 lineData[r].texX = MAP.cells[rayData[r].hitData].tex.Width - lineData[r].texX - 1;
+
+            lineData[r].layerDepth = rayData[r].distance / 1000.0f;
         }
     }
     
@@ -98,12 +101,5 @@ public class Calculate
                                                         (int)MAP.cells[data.hitData].tex.Height * (data.hitPosition.Y - floorCheckCell.Y));
             }
         }
-    }
-
-    public void Sprite(Entity entity)
-    {
-        float distanceTo = Vector2.Distance(player.position, entity.position);
-
-
     }
 }

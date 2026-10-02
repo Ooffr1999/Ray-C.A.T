@@ -63,7 +63,7 @@ public class Player : Entity
     public void Turn()
     {
         direction += input.Mouse.XDelta * deltaTime * turnSpeedModifier;                               //Add mouse input to direction.
-        
+
         if (input.Mouse.position.X >= 1915)                                                                                        
             input.Mouse.SetPosition(10, input.Mouse.position.Y);
         else if (input.Mouse.position.X <= 5)
@@ -73,6 +73,9 @@ public class Player : Entity
             direction = -180;
         else if (direction < -180)
             direction = 180;
+
+        //height += input.Mouse.YDelta * deltaTime;
+        //height = Math.Clamp(height, 0.3f, 0.7f);
     }
     
 }

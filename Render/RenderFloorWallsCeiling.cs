@@ -1,3 +1,5 @@
+using System;
+using System.Xml.Serialization;
 using Custom;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -8,23 +10,39 @@ public class Render
     
     SpriteBatch batch;
     Calculate calcMap;
+    Vector2i WindowResolution;
+    Vector2i GameResolution;
+
+    float xModifier = 0;
+    float yModifier = 0;
+
 
     public Render (GameServiceContainer serviceContainer, Calculate _calcMap)
     {
         batch = serviceContainer.GetService<SpriteBatch>();
         calcMap = _calcMap;
         lightStrength = 0.5f;
+
+        WindowResolution = calcMap.SCREEN_RES;
+        GameResolution = calcMap.GAME_RES;
+
+        xModifier = (float)WindowResolution.X / (float)GameResolution.X; 
+        yModifier = (float)WindowResolution.Y / (float)GameResolution.Y;
     }
 
     public void Floors()
     {
-        for (int y = 0; y < calcMap.GAME_RES.Y / 2; y++)
+        Texture2D tex = calcMap.MAP.cells[0].tex;
+
+        for (int y = 0; y < GameResolution.Y / 2; y++)
         {
-            for (int x = 0; x < calcMap.GAME_RES.X; x++)
+            for (int x = 0; x < GameResolution.X; x++)
             {   
+                if (calcMap.floorPlanePoints[x, y] != 0)
+                {
                 if (calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].cellType != CellType.Wall)
                 {
-                    Texture2D tex = calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].tex;
+
                     Color colorShade = calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].color;
                     
                     //Get distance shade   
@@ -32,17 +50,17 @@ public class Render
                     floorShade.A = 255;
 
                     //Texture floor
-                    
                     Primitives.DrawTexturedBox(batch, 
                                                     tex, 
-                                                    new EMath.Vector2i((int)calcMap.floorPlaneTexturePosition[x, y].X, 
+                                                    new Vector2i((int)calcMap.floorPlaneTexturePosition[x, y].X, 
                                                                        (int)calcMap.floorPlaneTexturePosition[x, y].Y), 
-                                                    new EMath.Vector2i(1, 1), 
-                                                    new Vector2(x * 6f,
-                                                    calcMap.SCREEN_RES.Y - y * 4.5f),
+                                                    new Vector2i(1, 1), 
+                                                    new Vector2(x * xModifier,
+                                                    WindowResolution.Y - y * yModifier),
                                                     Vector2.One * 0.5f,
-                                                    Vector2.One * 6,
-                                                    floorShade);
+                                                    Vector2.One * xModifier,
+                                                    floorShade,
+                                                    0.0f);
                                                     
                                                     
                     
@@ -51,15 +69,17 @@ public class Render
                     //Texture ceiling
                     Primitives.DrawTexturedBox(batch, 
                                                     tex, 
-                                                    new EMath.Vector2i( (int)calcMap.floorPlaneTexturePosition[x, y].X, 
+                                                    new Vector2i( (int)calcMap.floorPlaneTexturePosition[x, y].X, 
                                                                         (int)calcMap.floorPlaneTexturePosition[x, y].Y), 
-                                                    new EMath.Vector2i(1, 1), 
-                                                    new Vector2(x * 6f,
-                                                    0 + y * 4.5f),
+                                                    new Vector2i(1, 1), 
+                                                    new Vector2(x * xModifier,
+                                                    0 + y * yModifier),
                                                     Vector2.One * 0.5f,
-                                                    Vector2.One * 6,
-                                                    floorShade);
+                                                    Vector2.One * xModifier,
+                                                    floorShade,
+                                                    0.0f);
                     }
+                }
                 }
             }
         }
@@ -67,25 +87,21 @@ public class Render
 
     public void Walls()
     {
-        for (int r = 0; r < calcMap.GAME_RES.X; r++)
+        Texture2D tex = AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/Stone/Stone01.png");
+
+        for (int r = 0; r < GameResolution.X; r++)
         {
             Cell cell = calcMap.MAP.cells[calcMap.rayData[r].hitData];
 
             Color color = (cell.color * lightStrength) * (1 / calcMap.rayData[r].distance);
             color.A = 255;
 
-            Primitives.DrawTexturedLine(batch, cell.tex, (int)calcMap.lineData[r].texX, 0,
-                                new Vector2(calcMap.lineData[r].lineWidth * r, calcMap.lineData[r].drawStart), 
-                                new Vector2(calcMap.lineData[r].lineWidth * r, calcMap.lineData[r].drawEnd), 
-                                calcMap.lineData[r].lineWidth, 
+            Primitives.DrawTexturedLine(batch, tex, (int)calcMap.lineData[r].texX, 0,
+                                new Vector2((calcMap.lineData[r].lineWidth * r), calcMap.lineData[r].drawStart), 
+                                new Vector2((calcMap.lineData[r].lineWidth * r), calcMap.lineData[r].drawEnd), 
+                                calcMap.lineData[r].lineWidth / xModifier, 
                                 color,
-                                0);
-                                
+                                calcMap.lineData[r].layerDepth); 
         }
-    }
-
-    public void Sprite(Sprite sprite, Vector2 pos)
-    {
-
     }
 }

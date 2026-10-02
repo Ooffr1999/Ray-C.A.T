@@ -102,5 +102,7 @@ public static class Ray
         public Color color;
 
         public double texX;
+
+        public float layerDepth;
     }
 }
