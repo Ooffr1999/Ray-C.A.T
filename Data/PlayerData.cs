@@ -73,9 +73,6 @@ public class Player : Entity
             direction = -180;
         else if (direction < -180)
             direction = 180;
-
-        //height += input.Mouse.YDelta * deltaTime;
-        //height = Math.Clamp(height, 0.3f, 0.7f);
     }
     
 }

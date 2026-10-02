@@ -124,17 +124,10 @@ public class RayCatCore : Game
             else colorData[i] = Color.Red;
         }
 
-        TextRenderer fpsText = new TextRenderer(_spriteBatch, AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Fonts/square_6x6.png"));
-
         Render render = new Render(Services, _calculateMap);
         
         render.Floors();
         render.Walls();
-
-        fpsText.text = fps.msg;
-        fpsText.SetArea(new Vector2(1000, 3), 500, 100);
-        fpsText.DrawBoundaryBox();
-        fpsText.Draw();
 
         Minimap.DrawMap();                              //Draws the minimap
         Minimap.DrawPlayer(player, 90);                 //Draws player onto the minimap
@@ -146,6 +139,5 @@ public class RayCatCore : Game
             Services.GetService<List<Entity>>()[i].DrawToScreen(_spriteBatch, player, WindowResolution);
                                     
         _spriteBatch.End();
-        
     }
 }
