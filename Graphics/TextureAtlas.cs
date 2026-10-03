@@ -48,7 +48,7 @@ public class TextureAtlas
     {
         TextureAtlas atlas = new TextureAtlas(_texture);
 
-        string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-=()[]{}<>/¤¨#%!?.,'^@&$ æØø";
+        string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+-=()[]{}<>/¤¨#%!?.,'^@&$ :Øø";
         char[] _alphabet = alphabet.ToCharArray();
 
         int a = 0;

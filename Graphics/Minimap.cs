@@ -25,6 +25,9 @@ public class Minimap
 
     public void DrawMap()
     {
+        if (Hide)
+            return;
+            
         DrawMap(Vector2.Zero);
     }
 

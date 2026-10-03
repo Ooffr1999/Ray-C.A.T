@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
+using System.Runtime.Intrinsics.X86;
 using Custom;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -20,6 +22,10 @@ public class Entity
     public Vector2 forward;
     Vector2 _right{get; set;}
     public Vector2 right;
+
+    public Vector2 offset {get; set;}
+    public Vector2 screenPosition;
+    public float angleToPlayer;
 
     //Draw
     public Sprite sprite;
@@ -44,18 +50,28 @@ public class Entity
     #region DrawToScreen
     public void DrawToScreen(SpriteBatch _batch, Player player, Vector2i WindowResolution)
     {
-        DrawToScreen(_batch, player, WindowResolution, Vector2.Zero, spriteScale);
+        DrawToScreen(_batch, player, WindowResolution, offset, spriteScale);
     }
 
     public void DrawToScreen(SpriteBatch _batch, Player player, Vector2i WindowResolution, Vector2 offset, Vector2 scale)
     {
-        float positionToScreenModifier = float.RadiansToDegrees((float)Math.Atan2(position.Y - player.position.Y, position.X - player.position.X));
+        angleToPlayer = float.RadiansToDegrees((float)Math.Atan2(position.Y - player.position.Y, position.X - player.position.X));
 
-        //distToPlayer = Vector2.Distance(position, player.position);
+        float xPosition = WindowResolution.X / 2 - (player.direction - angleToPlayer) * 21.5f;
+
+        screenPosition = new Vector2(xPosition, WindowResolution.Y / 2);
+
+        if (player.direction >= -180 && player.direction <= -90 &&
+            angleToPlayer <= 180 && angleToPlayer >= 90)
+            screenPosition.X -= 7740;
+
+        if (player.direction <= 180 && player.direction >= 90 &&
+            angleToPlayer >= -180 && angleToPlayer <= -90)
+            screenPosition.X += 7740;    
 
         Draw(_batch,
             player,
-            new Vector2(WindowResolution.X / 2 - (player.direction - positionToScreenModifier) * 21.5f, WindowResolution.Y / 2) + offset,
+            screenPosition + offset,
             spriteColor,
             scale / Vector2.Distance(player.position, position)
             );

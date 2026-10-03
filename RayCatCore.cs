@@ -27,7 +27,7 @@ public class RayCatCore : Game
     public Calculate _calculateMap;
     
     //Game Window Values
-    public Vector2i GameResolution = new Vector2i(320, 240);
+    public Vector2i GameResolution = new Vector2i(320 / 2, 240 / 2);
     public Vector2i WindowResolution = new Vector2i(1920, 1080);
     
     public int FOV = 90;
@@ -129,8 +129,6 @@ public class RayCatCore : Game
         render.Floors();
         render.Walls();
 
-        Minimap.DrawMap();                              //Draws the minimap
-        Minimap.DrawPlayer(player, 90);                 //Draws player onto the minimap
         _spriteBatch.End();
 
         _spriteBatch.Begin(SpriteSortMode.BackToFront, samplerState:SamplerState.PointClamp);
@@ -138,6 +136,13 @@ public class RayCatCore : Game
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
             Services.GetService<List<Entity>>()[i].DrawToScreen(_spriteBatch, player, WindowResolution);
                                     
+        _spriteBatch.End();
+
+        _spriteBatch.Begin();
+
+        Minimap.DrawMap();                              //Draws the minimap
+        Minimap.DrawPlayer(player, 90);                 //Draws player onto the minimap
+        
         _spriteBatch.End();
     }
 }

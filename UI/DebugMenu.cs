@@ -14,6 +14,8 @@ public class DebugMenu
     int Width;
     int Height;
 
+    bool show;
+
     public DebugMenu() {}
 
     public DebugMenu(SpriteBatch _batch, InputManager _input)
@@ -46,6 +48,9 @@ public class DebugMenu
 
     public void Update()
     {
+        if (!show)
+            return;
+
         DebugMenuHeader.Update();
     }
 
@@ -61,6 +66,9 @@ public class DebugMenu
 
     public void Draw()
     {   
+        if (!show)
+            return;
+            
         debugText.DrawBoundaryBox();
         debugText.Draw();
 
@@ -97,5 +105,30 @@ public class DebugMenu
 
         if (debugText != null)
             debugText.SetArea(position, Width, Height);
+    }
+
+    public void ClearDraw()
+    {
+        debugText.text = "";
+    }
+
+    public bool GetShowState()
+    {
+        return show;
+    }
+
+    public void FlipShowState()
+    {
+        show = !show;
+    }
+
+    public void Show()
+    {
+        show = true;
+    }
+
+    public void Hide()
+    {
+        show = false;
     }
 }

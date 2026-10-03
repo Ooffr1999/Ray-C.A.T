@@ -16,7 +16,6 @@ public class YarrFaceGame : RayCatCore
 
     public TextRenderer _textDraw;
     public DebugMenu debugMenu;
-    bool showDebugMenu;
 
     protected override void LoadContent()
     {
@@ -65,7 +64,7 @@ public class YarrFaceGame : RayCatCore
         _textDraw.letterSpacing = 7;
         _textDraw.fontSize = 5;
         _textDraw.SetArea(new Vector2(0, 0), 1000, 200);
-        _textDraw.text = "Ray-C.A.T Alpha 0.01";
+        _textDraw.text = "Ray-C.A.T Alpha 0.02";
         _textDraw.textColor = Color.White;
         _textDraw.lineAdjustment = LineAdjustment.Top;
 
@@ -75,26 +74,21 @@ public class YarrFaceGame : RayCatCore
     protected override void Update(GameTime gameTime)
     {
         if (_input.Keyboard.IsButtonJustPressed(Keys.Tab))
-        {
             Minimap.Hide = !Minimap.Hide;
-            debugMenu.Write("Map key");
-        }
 
         if (_input.Keyboard.IsButtonJustPressed(Keys.Escape))
-        {
-            debugMenu.Write("Closing game");
             Exit();
-        }
 
         if (_input.Keyboard.IsButtonJustPressed(Keys.F1))
-            showDebugMenu = !showDebugMenu;
-
+        {
+            debugMenu.FlipShowState();
+            player.stop = debugMenu.GetShowState();
+        }
 
         glonk.spriteColor = (Color.White * 0.5f) * (1 / Vector2.Distance(player.position, glonk.position));
         glonk.spriteColor.A = 255;
 
-        if (showDebugMenu)
-            debugMenu.Update();
+        debugMenu.Update();
 
         base.Update(gameTime);
     }
@@ -104,17 +98,19 @@ public class YarrFaceGame : RayCatCore
         base.Draw(gameTime);
 
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
-
-        if (showDebugMenu)
-            debugMenu.Draw();
-        
-        _textDraw.Draw();
-
-        //TODO: Get text library up and running
         
         //TODO: Text adjustment works, but centering lineadjustment doesn't work with even numbers
         _textDraw.Draw();
         
+        debugMenu.Draw();
+        
+        debugMenu.ClearDraw();
+        debugMenu.Write(glonk.screenPosition.ToString());
+        debugMenu.Write("|");
+        debugMenu.Write("Angle to player: " + glonk.angleToPlayer.ToString());
+        debugMenu.Write("|");
+        debugMenu.Write(player.direction.ToString());
+
         _spriteBatch.End();
 
         //TODO: Fix the infinite redrawing of the floor beyond the confines of the map

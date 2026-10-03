@@ -14,6 +14,8 @@ public class Player : Entity
 
     public float turnSpeedModifier {get; set;}                  //Turn speed modifier
 
+    public bool stop;
+
     InputManager input;
     Map MAP;
 
@@ -35,6 +37,9 @@ public class Player : Entity
 
     public override void Update(float _deltaTime)               //Run move and turn functions in the Update
     {
+        if (stop)
+            return;
+
         Move();                                         
         Turn();
 
@@ -73,6 +78,7 @@ public class Player : Entity
             direction = -180;
         else if (direction < -180)
             direction = 180;
+            
     }
     
 }
