@@ -9,7 +9,7 @@ public class Render
     public float lightStrength {get; set;}
     
     SpriteBatch batch;
-    Calculate calcMap;
+    RaycastCalculate calcMap;
     Vector2i WindowResolution;
     Vector2i GameResolution;
 
@@ -17,7 +17,7 @@ public class Render
     float yModifier = 0;
 
 
-    public Render (GameServiceContainer serviceContainer, Calculate _calcMap)
+    public Render (GameServiceContainer serviceContainer, RaycastCalculate _calcMap)
     {
         batch = serviceContainer.GetService<SpriteBatch>();
         calcMap = _calcMap;

@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Graphics;
 using Custom;
 using RayCat.Data;
 
-public class Calculate
+public class RaycastCalculate
 {
     public Player player;
     public int FOV;
@@ -21,7 +21,7 @@ public class Calculate
     public float [,] floorPlanePointsDistance;
     public Vector2[,] floorPlaneTexturePosition;
 
-    public Calculate(Player _player, int _FOV, Map _MAP, Vector2i _GAME_RES, Vector2i _SCREEN_RES)
+    public RaycastCalculate(Player _player, int _FOV, Map _MAP, Vector2i _GAME_RES, Vector2i _SCREEN_RES)
     {
         player = _player;
         FOV = _FOV;

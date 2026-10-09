@@ -24,7 +24,7 @@ public class RayCatCore : Game
 
     //TODO: Add threading to the calculation and drawing
 
-    public Calculate _calculateMap;
+    public RaycastCalculate _calculateMap;
     
     //Game Window Values
     public Vector2i GameResolution = new Vector2i(320 / 2, 240 / 2);
@@ -95,10 +95,10 @@ public class RayCatCore : Game
         _input.Update(gameTime); 
 
         //Calculate Map
-        _calculateMap = new Calculate(player, FOV, MAP, GameResolution, WindowResolution);
+        _calculateMap = new RaycastCalculate(player, FOV, MAP, GameResolution, WindowResolution);
 
         _calculateMap.Floor();
-        _calculateMap.Walls();
+        //_calculateMap.Walls();
         
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
             Services.GetService<List<Entity>>()[i].Update(_deltaTime);
@@ -127,7 +127,7 @@ public class RayCatCore : Game
         Render render = new Render(Services, _calculateMap);
         
         render.Floors();
-        render.Walls();
+        //render.Walls();
 
         _spriteBatch.End();
 
