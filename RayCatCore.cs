@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Microsoft.Xna.Framework.Graphics;
 using System.Linq;
 using RayCat.Logic;
+using System;
 
 //The RayCat Engine core. 
 //This is the file that runs the game. It is designed to be a sandbox that files inherriting will build upon.
@@ -27,7 +28,7 @@ public class RayCatCore : Game
     public RaycastCalculate _calculateMap;
     
     //Game Window Values
-    public Vector2i GameResolution = new Vector2i(320 / 2, 240 / 2);
+    public Vector2i GameResolution = new Vector2i(320, 240);
     public Vector2i WindowResolution = new Vector2i(1920, 1080);
     
     public int FOV = 90;
@@ -40,7 +41,7 @@ public class RayCatCore : Game
 
     public Minimap Minimap;
 
-    SimpleFps fps;
+    public DebugMenu debugMenu;
 
     public RayCatCore()
     {
@@ -70,8 +71,6 @@ public class RayCatCore : Game
     protected override void LoadContent()
     {
         base.LoadContent();
-        
-        fps = new SimpleFps();
 
         _spriteBatch = new SpriteBatch(GraphicsDevice);                 //Create the spritebatch
         Services.AddService(typeof(SpriteBatch), _spriteBatch);         //Add spritebatch to the Servicemanager
@@ -79,7 +78,7 @@ public class RayCatCore : Game
         Services.AddService(typeof(Map), MAP);                          //Add the game map to the ServiceManager
 
         player = new Player(Services, MAP);                             //Create the player
-        player.position = new Vector2(2, 2);                            //Set initial position
+        player.position = new Vector3(2, 0, 2);                         //Set initial position
         player.direction = 90;                                          //Set initial direction
         player.height = 0.5f;
         player.speed = 1;
@@ -90,7 +89,6 @@ public class RayCatCore : Game
 
     protected override void Update(GameTime gameTime)
     {
-        fps.Update(gameTime);
         _deltaTime = (float)gameTime.ElapsedGameTime.TotalSeconds;
         _input.Update(gameTime); 
 
@@ -98,10 +96,12 @@ public class RayCatCore : Game
         _calculateMap = new RaycastCalculate(player, FOV, MAP, GameResolution, WindowResolution);
 
         _calculateMap.Floor();
-        //_calculateMap.Walls();
+        _calculateMap.Walls();
         
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
             Services.GetService<List<Entity>>()[i].Update(_deltaTime);
+
+        debugMenu.Update();
 
         base.Update(gameTime);
     }
@@ -138,11 +138,14 @@ public class RayCatCore : Game
                                     
         _spriteBatch.End();
 
-        _spriteBatch.Begin();
+        _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
 
         Minimap.DrawMap();                              //Draws the minimap
         Minimap.DrawPlayer(player, 90);                 //Draws player onto the minimap
         
+        debugMenu.Draw();
+        debugMenu.ClearDraw();
+
         _spriteBatch.End();
     }
 }

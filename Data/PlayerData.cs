@@ -22,8 +22,8 @@ public class Player : Entity
     //Passes in the Servicemanager for the Entity it inherits from
     public Player(GameServiceContainer service, Map _MAP) : base(service)
     {
-        position = new Vector2(5, 2);                            //Set initial position
-        direction = 90;                                          //Set initial direction
+        position = new Vector3(0, 0, -1f);                            //Set initial position
+        direction = 0;                                          //Set initial direction
         height = 0.5f;                                           //Set initial height
         speed = 1;                                               //Set initial speed           
         runModifier = 3;                                         //set runmodifier                   
@@ -53,16 +53,19 @@ public class Player : Entity
         if (input.Keyboard.IsKeyDown(Keys.LeftShift))           //Check if the left-shift button is down
             _speed *= 2.5f;                                     //If it is, we multiply the speed by the runningmodifier
 
+        
         Vector2 nextFramePosition = input.Keyboard.GetAxis(Keys.S, Keys.W) * forward +      //Add WASD movement
                                     input.Keyboard.GetAxis(Keys.A, Keys.D) * right;
 
         nextFramePosition *= deltaTime;                         //Multiply movement by delta 
         nextFramePosition *= _speed;                            //And speed
 
-        EMath.Vector2i mapCheck = EMath.FloorVector(position + nextFramePosition);      
+        Vector2 TwoDimensionalPosition = new Vector2(position.X, position.Z);
+        EMath.Vector2i mapCheck = EMath.FloorVector(TwoDimensionalPosition + nextFramePosition);      
 
-        if (MAP.cells[MAP.data[mapCheck.X, mapCheck.Y]].cellType != CellType.Wall)      //Check if collision is possible, by checking the future position and moving there if it is open
-            position += nextFramePosition;
+        //if (MAP.cells[MAP.data[mapCheck.X, mapCheck.Y]].cellType != CellType.Wall)      //Check if collision is possible, by checking the future position and moving there if it is open
+        position += new Vector3(nextFramePosition.X, 0, nextFramePosition.Y);
+            
     }
 
     public void Turn()
@@ -73,7 +76,7 @@ public class Player : Entity
             input.Mouse.SetPosition(10, input.Mouse.position.Y);
         else if (input.Mouse.position.X <= 5)
             input.Mouse.SetPosition(1910, input.Mouse.position.Y);
-
+        
         if (direction > 180)
             direction = -180;
         else if (direction < -180)

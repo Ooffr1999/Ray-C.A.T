@@ -1,5 +1,7 @@
 namespace Custom;
 
+using Microsoft.Xna.Framework;
+
 public class Vector2i
 {
     public int X {get; set;}
@@ -19,5 +21,10 @@ public class Vector2i
     public void Zero()
     {
         new Vector2i(0, 0);
+    }
+
+    public Vector2 toVector2()
+    {
+        return new Vector2(X, Y);
     }
 }

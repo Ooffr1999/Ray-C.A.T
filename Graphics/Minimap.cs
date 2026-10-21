@@ -72,6 +72,6 @@ public class Minimap
         //    Primitives.DrawLine(spriteBatch, player.position * MAP.cellSize, (player.position + _calculateMap.rayData[r].hitPosition) * MAP.cellSize, 1f, Color.Red);
         
         //Draw player on the minimap
-        player.Draw(spriteBatch, (player.position + offset) * MAP.cellSize, Color.White, player.direction, Vector2.One / 10);   
+        //player.Draw(spriteBatch, (player.position + offset) * MAP.cellSize, Color.White, player.direction, Vector2.One / 10);   
     }    
 }

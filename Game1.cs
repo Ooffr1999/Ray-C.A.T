@@ -12,10 +12,11 @@ namespace WolfenStein_like;
 
 public class YarrFaceGame : RayCatCore
 {   
-    public Entity glonk;
-
     public TextRenderer _textDraw;
-    public DebugMenu debugMenu;
+
+     TempPlayerDetails p;
+
+    Sector sector;
 
     protected override void LoadContent()
     {
@@ -54,11 +55,6 @@ public class YarrFaceGame : RayCatCore
         base.LoadContent();
 
         player.sprite = new Sprite(AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/reddot.png"));
-        
-        glonk = new Entity(Services);
-        glonk.sprite = new Sprite(AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Content/textures/pillar.png"));
-        glonk.position = new Vector2(4.5f, 4.5f);
-        glonk.spriteScale *= 20;
 
         _textDraw = new TextRenderer(_spriteBatch, AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Fonts/square_6x6.png"));
         _textDraw.letterSpacing = 7;
@@ -69,6 +65,18 @@ public class YarrFaceGame : RayCatCore
         _textDraw.lineAdjustment = LineAdjustment.Top;
 
         debugMenu = new DebugMenu(_spriteBatch, _input);
+
+        sector = new Sector(_spriteBatch);
+    }
+    
+    protected override void Initialize()
+    {
+        base.Initialize();
+
+        p.position = new Vector3(0, 0, 10);
+        p.angle = 0;
+
+        Sector sector = new Sector(_spriteBatch);
     }
 
     protected override void Update(GameTime gameTime)
@@ -82,38 +90,40 @@ public class YarrFaceGame : RayCatCore
         if (_input.Keyboard.IsButtonJustPressed(Keys.F1))
         {
             debugMenu.FlipShowState();
-            player.stop = debugMenu.GetShowState();
+            //player.stop = debugMenu.GetShowState();
         }
 
-        glonk.spriteColor = (Color.White * 0.5f) * (1 / Vector2.Distance(player.position, glonk.position));
-        glonk.spriteColor.A = 255;
+        if (_input.Keyboard.IsKeyDown(Keys.Space))
+            p.position.Y += _deltaTime * 1;
 
-        debugMenu.Update();
+        if (_input.Keyboard.IsKeyDown(Keys.LeftShift))
+            p.position.Y -= _deltaTime * 1;
 
         base.Update(gameTime);
     }
 
     protected override void Draw(GameTime gameTime)
     {
+        //TODO: Add all the textures to one texture-atlas that can be retreived with an xml(or whatever its called) file, to increase performance
         base.Draw(gameTime);
 
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         
         //TODO: Text adjustment works, but centering lineadjustment doesn't work with even numbers
         _textDraw.Draw();
+
+        sector.DrawBox(_spriteBatch, player, p.position, new Vector2(WindowResolution.X, WindowResolution.Y), _input);
         
-        debugMenu.Draw();
+        //sector.DrawSectorWall(_spriteBatch, player, new Vector2(7, 3), new Vector2(3, 3), WindowResolution, GameResolution);
+
         
-        debugMenu.ClearDraw();
-        debugMenu.Write(glonk.screenPosition.ToString());
-        debugMenu.Write("|");
-        debugMenu.Write("Angle to player: " + glonk.angleToPlayer.ToString());
-        debugMenu.Write("|");
-        debugMenu.Write(player.direction.ToString());
 
         _spriteBatch.End();
+    }
 
-        //TODO: Fix the infinite redrawing of the floor beyond the confines of the map
-        //TODO: Add all the textures to one texture-atlas that can be retreived with an xml(or whatever its called) file, to increase performance
+    struct TempPlayerDetails
+    {
+        public Vector3 position;
+        public float angle;
     }
 }

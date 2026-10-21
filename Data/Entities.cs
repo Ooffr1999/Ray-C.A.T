@@ -11,7 +11,7 @@ namespace RayCat.Data;
 
 public class Entity
 {
-    public Vector2 position {get; set;}
+    public Vector3 position {get; set;}
     
     public float direction {get; set;}
 
@@ -73,7 +73,7 @@ public class Entity
             player,
             screenPosition + offset,
             spriteColor,
-            scale / Vector2.Distance(player.position, position)
+            scale / Vector3.Distance(player.position, position)
             );
     }
     #endregion
@@ -81,7 +81,7 @@ public class Entity
     #region Draw
     public void Draw(SpriteBatch _batch, Player player, Vector2 pos, Color color, Vector2 scale)
     {
-        sprite.Draw(_batch, pos, color, 0, scale, Vector2.Distance(position, player.position) / 100);
+        sprite.Draw(_batch, pos, color, 0, scale, Vector3.Distance(position, player.position) / 100);
     }
 
     public void Draw(SpriteBatch _batch, Vector2 pos, Vector2 scale)

@@ -44,7 +44,7 @@ public class RaycastCalculate
         for (int r = 0; r < GAME_RES.X; r++)
         {
             //Raycast and get data
-            rayData[r] = Ray.WallCast(player.position, InitialCastDirection + CastFieldOfViewPerCycleIncrement * r, MAP, MAP.resolution);
+            rayData[r] = Ray.WallCast(new Vector2(player.position.X, player.position.Z), InitialCastDirection + CastFieldOfViewPerCycleIncrement * r, MAP, MAP.resolution);
 
             lineData[r].lineWidth = SCREEN_RES.X / GAME_RES.X;                                  //Set width of line
             lineData[r].lineHeight = SCREEN_RES.Y / rayData[r].distance;                        //Set length of line
@@ -84,7 +84,7 @@ public class RaycastCalculate
                 
             for (int x = 0; x < GAME_RES.X; x++)
             {
-                Ray.Raydata data = Ray.Cast(player.position, 
+                Ray.Raydata data = Ray.Cast(new Vector2(player.position.X, player.position.Z), 
                                             InitialCastDirection + (CastFieldOfViewPerCycleIncrement * x), 
                                             rowDistance, 
                                             MAP, MAP.resolution);

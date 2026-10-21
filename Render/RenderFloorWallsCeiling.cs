@@ -21,7 +21,7 @@ public class Render
     {
         batch = serviceContainer.GetService<SpriteBatch>();
         calcMap = _calcMap;
-        lightStrength = 0.5f;
+        lightStrength = 1f;
 
         WindowResolution = calcMap.SCREEN_RES;
         GameResolution = calcMap.GAME_RES;
@@ -42,7 +42,6 @@ public class Render
                 {
                 if (calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].cellType != CellType.Wall)
                 {
-
                     Color colorShade = calcMap.MAP.cells[calcMap.floorPlanePoints[x, y]].color;
                     
                     //Get distance shade   
