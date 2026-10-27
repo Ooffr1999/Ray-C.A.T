@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection.Metadata;
 using System.Security.Principal;
+using System.Xml.Linq;
 using Custom;
 using Microsoft.VisualBasic;
 using Microsoft.Xna.Framework;
@@ -11,10 +13,12 @@ public class Sector
 {
     List<Point> points = new List<Point>();
     SpriteBatch batch;
+    Camera cam;
 
-    Vector3 campos;
+    VertexPositionColor[] vertexPositionColor;
+    VertexBuffer vertexBuffer;
 
-    public Sector(SpriteBatch _batch)
+    public Sector(SpriteBatch _batch, Camera _cam)
     {
         //VIKTIG: Jeg tar notater under arbeidsprosessen fordi det at JEG SPESSIFIKT skjønner dette er jævla viktig
         /*
@@ -52,83 +56,82 @@ public class Sector
 
         I lengden ser jeg for meg at det skal gå ann å dele opp 
         */
-        campos = new Vector3(0, 0, 0.1f);
         batch = _batch;
+        cam = _cam;
     }
 
-    public void DrawSquare(SpriteBatch _batch)
+    public void RenderSector(Vector3[] sectorVertices, float height)
     {
-        float indexMax = points[2].X - points[0].X;
-
-        for (int i = 0; i < indexMax; i++)
-        {
-            Primitives.DrawLine(batch,
-                                Vector2.Lerp(points[0].ToVector2(), points[2].ToVector2(), (1 / indexMax) * i),
-                                Vector2.Lerp(points[1].ToVector2(), points[3].ToVector2(), (1 / indexMax) * i),
-                                Color.White);
-        }    
+        RenderSector(sectorVertices, height, Vector3.Zero);
     }
 
-    public void DrawBox(SpriteBatch _spriteBatch, Player player, Vector3 playerPosition, Vector2 WindowResolution, InputManager input)
+    public void RenderSector(Vector3[] sectorVertices, float height, Vector3 offset)
     {
-        Matrix test = Matrix.CreatePerspectiveFieldOfView(MathHelper.Pi / 4f, 16 / 9, 0.1f, 300);
+        //Testing the rendering and creation of 3d stuff using basiceffect
+        //Set up Basic effect
 
-        Vector3 cameraUpVector = Vector3.Up;
+        BasicEffect basicEffect = new BasicEffect(batch.GraphicsDevice);
+        basicEffect.World = Matrix.Identity;
+        basicEffect.View = cam.GetViewMatrix();
+        basicEffect.Projection = cam.getPerspectiveMatrix();
 
-        float yaw = float.DegreesToRadians(-player.direction);
+        basicEffect.Alpha = 1.0f;
+        basicEffect.VertexColorEnabled = true;
+        basicEffect.LightingEnabled = false;
 
-        Quaternion cameraRotation = Quaternion.CreateFromYawPitchRoll(yaw, 0, 0);
-        Vector3 rotatedForward = Vector3.Transform(new Vector3(0, 0, 1), cameraRotation);
-        rotatedForward = Vector3.Normalize(rotatedForward);
-        
-        Vector3 cameraTarget = campos - rotatedForward;
+        //Create triangle
+        vertexPositionColor = new VertexPositionColor[sectorVertices.Length * 2];
 
-        Vector3 cameraRight = Vector3.Cross(rotatedForward, cameraUpVector);
-        cameraRight = Vector3.Normalize(cameraRight);
-
-        //player.position += new Vector3(player.forward.X, 0, player.forward.Y) * input.Keyboard.GetAxis(Keys.Down, Keys.Up);
-        campos += input.Keyboard.GetAxis(Keys.Left, Keys.Right) * cameraRight / 50;
-        campos += input.Keyboard.GetAxis(Keys.Down, Keys.Up) * rotatedForward / 50;
-
-        Matrix viewMatrix = Matrix.CreateLookAt(campos, cameraTarget, cameraUpVector);
-        
-        Vector3[] points = new Vector3[]
+        for (int i = 0; i < vertexPositionColor.Length;)
         {
-            new Vector3(0, -1, 5),
-            new Vector3(1, -1, 5),
-            new Vector3(0, -1, 6),
-            new Vector3(1, -1, 6), 
-            new Vector3(0, 0, 5),
-            new Vector3(1, 0, 5),
-            new Vector3(0, 0, 6),
-            new Vector3(1, 0, 6), 
-        };
-        
-        Vector3[] screenPoints = new Vector3[points.Length];
+            vertexPositionColor[i].Position = sectorVertices[i / 2] + offset;
+            vertexPositionColor[i].Color = Color.Red;
+            vertexPositionColor[i +1].Position = sectorVertices[i / 2] + Vector3.Up * height + offset;
+            vertexPositionColor[i +1].Color = Color.Green;
 
-        for (int i = 0; i < screenPoints.Length; i++)
+            i += 2;
+        }
+
+        short indicesIndex = 0;
+        short[] indices = new short[(sectorVertices.Length - 1) * 6];
+
+        for (int i = 0; i < indices.Length;)
         {
-            screenPoints[i] = _spriteBatch.GraphicsDevice.Viewport.Project(points[i], test, viewMatrix, Matrix.Identity);
+            indices[i] = (Int16)(0 + indicesIndex);
+            indices[i + 1] = (Int16)(1 + indicesIndex);
+            indices[i + 2] = (Int16)(2 + indicesIndex);
+            indices[i + 3] = (Int16)(1 + indicesIndex);
+            indices[i + 4] = (Int16)(3 + indicesIndex);
+            indices[i + 5] = (Int16)(2 + indicesIndex);
 
-            if (screenPoints[i].Z > 0 && screenPoints[i].Z < 1f)
-            {
-                Primitives.DrawBox(_spriteBatch, new Vector2(screenPoints[i].X, screenPoints[i].Y), Color.Red, Vector2.One * 10);
-            }
-        };
+            indicesIndex += 2;
+            i += 6;
+        }
 
-        Console.WriteLine(screenPoints[0]);
-        //Primitives.DrawBox(_spriteBatch, screenPoints[1], Color.Green, Vector2.One * 20);
-        /*
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[0], WindowResolution / 2 +  screenPoints[1], Color.Red);
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[2], WindowResolution / 2 + screenPoints[3], Color.Red);
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[0], WindowResolution / 2 + screenPoints[2], Color.Red);
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[1], WindowResolution / 2 + screenPoints[3], Color.Red);
+        vertexBuffer = new VertexBuffer(batch.GraphicsDevice, typeof(VertexPositionColor), vertexPositionColor.Length, BufferUsage.WriteOnly);
+        vertexBuffer.SetData<VertexPositionColor>(vertexPositionColor);
 
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[4], WindowResolution / 2 +  screenPoints[5], Color.Green);
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[6], WindowResolution / 2 + screenPoints[7], Color.Green);
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[4], WindowResolution / 2 + screenPoints[6], Color.Green);
-        Primitives.DrawLine(_spriteBatch, WindowResolution / 2 + screenPoints[5], WindowResolution / 2 + screenPoints[7], Color.Green);
-        */
+        IndexBuffer indexBuffer = new IndexBuffer(batch.GraphicsDevice, IndexElementSize.SixteenBits, indices.Length, BufferUsage.WriteOnly);
+        indexBuffer.SetData(indices);
+
+        batch.GraphicsDevice.SetVertexBuffer(vertexBuffer);
+        batch.GraphicsDevice.Indices = indexBuffer;
+
+        RasterizerState rasterizer = new RasterizerState();
+        rasterizer.CullMode = CullMode.None;
+
+        batch.GraphicsDevice.RasterizerState = rasterizer;
+
+        foreach(EffectPass pass in basicEffect.CurrentTechnique.Passes)
+        {
+            pass.Apply();
+            batch.GraphicsDevice.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, (sectorVertices.Length - 1) * 2);
+        }
+    }
+
+    public Vector3 ProjectVertexToScreenPosition(Vector3 vertex, Camera camera)
+    {
+        return batch.GraphicsDevice.Viewport.Project(vertex, camera.getPerspectiveMatrix(), camera.GetViewMatrix(), Matrix.Identity);
     }
 
     public float GetPlayerAngleToPoint(Player player, Point point)
@@ -147,15 +150,6 @@ public class Sector
 
         return float.RadiansToDegrees((float)Math.Atan2(cross, dot));
     }
-
-    public bool IsPointInView(Point point, Vector2i WindowResolution)
-    {
-        if (point.X < 0 || point.X > WindowResolution.X)
-            return false;
-        
-        return true;
-    }
-
 
     public void DrawPointToScreen(SpriteBatch _batch, Player player, Vector2 location, Vector2i WindowResolution)
     {
@@ -190,25 +184,5 @@ public class Sector
             screenPosition.X += 7740;    
         */
         return new Point((int)screenPosition.X, (int)screenPosition.Y);
-    }
-
-    public static bool IsVectorBehindPlayer(Player player, Vector2 location)
-    {
-        Vector2 direction = location - new Vector2(player.position.X, player.position.Z);
-        direction.Normalize();
-
-        if (Vector2.Dot(player.forward, direction) < 0)
-            return true;
-        return false;
-    }
-
-    void DrawLine(int _start, int _end)
-    {
-        Primitives.DrawLine(batch, points[_start].ToVector2(), points[_end].ToVector2(), Color.White);
-    }
-
-    void DrawLine(int _start, int _end, Color _color)
-    {
-        Primitives.DrawLine(batch, points[_start].ToVector2(), points[_end].ToVector2(), _color);
     }
 }

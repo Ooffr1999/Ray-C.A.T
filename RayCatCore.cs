@@ -25,13 +25,13 @@ public class RayCatCore : Game
 
     //TODO: Add threading to the calculation and drawing
 
-    public RaycastCalculate _calculateMap;
+    //public RaycastCalculate _calculateMap;
     
     //Game Window Values
     public Vector2i GameResolution = new Vector2i(320, 240);
     public Vector2i WindowResolution = new Vector2i(1920, 1080);
     
-    public int FOV = 90;
+    //public int FOV = 90;
     
     public Player player;  
 
@@ -42,6 +42,12 @@ public class RayCatCore : Game
     public Minimap Minimap;
 
     public DebugMenu debugMenu;
+
+    //TODO: For øyeblikket fjerner jeg alt som har å gjøre med raycasting fra Raycat, til fordel for den nye matrixløsningen
+    //Det betyr at jeg senere reimplementerer den med forbedringene denne andre løsningen byr på, slik at jeg kan optimalisere
+    //Raycasting blir dermed en instilling i frameworket. Type når man starter et prosjekt i Unity og man kan velge mellom 
+    //2D og 3D. Raycat får en slik instilling, men i stedet blir det om prosjektet skal være Raycast eller Matrix. 
+    //Kanskje jeg etterhvert til og med kan implementere true 3D, likt som i Quake, men det tør jeg ikke tenke på.
 
     public RayCatCore()
     {
@@ -59,7 +65,6 @@ public class RayCatCore : Game
         _graphics.PreferredBackBufferHeight = WindowResolution.Y;       //Set window height
         _graphics.ApplyChanges();                                       //Apply the changes
                                                                         //TODO: Add a modular way to set these things in game
-
         IsMouseVisible = true;
 
         _input = new InputManager();                                    //Create the inputmanager that drives button clicks.
@@ -93,13 +98,13 @@ public class RayCatCore : Game
         _input.Update(gameTime); 
 
         //Calculate Map
-        _calculateMap = new RaycastCalculate(player, FOV, MAP, GameResolution, WindowResolution);
+        //_calculateMap = new RaycastCalculate(player, FOV, MAP, GameResolution, WindowResolution);
 
-        _calculateMap.Floor();
-        _calculateMap.Walls();
+        //_calculateMap.Floor();
+        //_calculateMap.Walls();
         
-        for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
-            Services.GetService<List<Entity>>()[i].Update(_deltaTime);
+        //for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
+            //Services.GetService<List<Entity>>()[i].Update(_deltaTime);
 
         debugMenu.Update();
 
@@ -110,29 +115,16 @@ public class RayCatCore : Game
     {
         base.Draw(gameTime);
 
-        GraphicsDevice.Clear(Color.Black);
+        GraphicsDevice.Clear(Color.DarkBlue);
 
         _spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.Opaque, samplerState: SamplerState.PointClamp);
-        
-        Texture2D texture = new Texture2D(_graphics.GraphicsDevice, GameResolution.X, GameResolution.Y);
-        Color[] colorData = new Color[GameResolution.X * GameResolution.Y];
 
-        for (int i = 0; i < colorData.Length; i++)
-        {
-            if (i % 2 == 0)
-                colorData[i] = Color.Pink;
-            else colorData[i] = Color.Red;
-        }
-
-        Render render = new Render(Services, _calculateMap);
-        
-        render.Floors();
-        //render.Walls();
+        //TODO: Legg inn tegnefunksjon for Matrix her
 
         _spriteBatch.End();
 
         _spriteBatch.Begin(SpriteSortMode.BackToFront, samplerState:SamplerState.PointClamp);
-        //TODO: Fix the sprite drawing algorithm to fix the jumps when its right of the player
+        
         for (int i = 0; i < Services.GetService<List<Entity>>().Count; i++)
             Services.GetService<List<Entity>>()[i].DrawToScreen(_spriteBatch, player, WindowResolution);
                                     

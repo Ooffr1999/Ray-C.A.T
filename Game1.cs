@@ -14,8 +14,7 @@ public class YarrFaceGame : RayCatCore
 {   
     public TextRenderer _textDraw;
 
-     TempPlayerDetails p;
-
+    Camera cam;
     Sector sector;
 
     protected override void LoadContent()
@@ -66,17 +65,15 @@ public class YarrFaceGame : RayCatCore
 
         debugMenu = new DebugMenu(_spriteBatch, _input);
 
-        sector = new Sector(_spriteBatch);
+        //sector = new Sector(_spriteBatch, cam);
     }
     
     protected override void Initialize()
     {
         base.Initialize();
 
-        p.position = new Vector3(0, 0, 10);
-        p.angle = 0;
-
-        Sector sector = new Sector(_spriteBatch);
+        cam = new Camera();
+        sector = new Sector(_spriteBatch, cam);
     }
 
     protected override void Update(GameTime gameTime)
@@ -93,11 +90,7 @@ public class YarrFaceGame : RayCatCore
             //player.stop = debugMenu.GetShowState();
         }
 
-        if (_input.Keyboard.IsKeyDown(Keys.Space))
-            p.position.Y += _deltaTime * 1;
-
-        if (_input.Keyboard.IsKeyDown(Keys.LeftShift))
-            p.position.Y -= _deltaTime * 1;
+        cam.Update(_input, _deltaTime);
 
         base.Update(gameTime);
     }
@@ -107,23 +100,27 @@ public class YarrFaceGame : RayCatCore
         //TODO: Add all the textures to one texture-atlas that can be retreived with an xml(or whatever its called) file, to increase performance
         base.Draw(gameTime);
 
+        Matrix worldMatrix = Matrix.CreateWorld(cam.getCameraTarget(), cam.getForward(), Vector3.Up);
+
         _spriteBatch.Begin(samplerState: SamplerState.PointClamp);
         
         //TODO: Text adjustment works, but centering lineadjustment doesn't work with even numbers
         _textDraw.Draw();
 
-        sector.DrawBox(_spriteBatch, player, p.position, new Vector2(WindowResolution.X, WindowResolution.Y), _input);
-        
-        //sector.DrawSectorWall(_spriteBatch, player, new Vector2(7, 3), new Vector2(3, 3), WindowResolution, GameResolution);
+        debugMenu.Write(_input.Mouse.position.ToString());
 
-        
+        Vector3[] vertices = new Vector3[]
+        {
+            new Vector3(0, 0, 10),
+            new Vector3(10, 0, 0),
+            new Vector3(10, 0, -10),
+            new Vector3(-10, 0, -10),
+            new Vector3(-10, 0, 0),
+            new Vector3(0, 0, 10)
+        };
+
+        sector.RenderSector(vertices, 10);
 
         _spriteBatch.End();
-    }
-
-    struct TempPlayerDetails
-    {
-        public Vector3 position;
-        public float angle;
     }
 }
