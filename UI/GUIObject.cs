@@ -8,6 +8,7 @@ using Microsoft.Xna.Framework.Graphics;
 public class GUIObject
 {
     public InputManager input;
+    public SpriteBatch batch;
     Rectangle area {get; set;}
 
     Vector2 position { get; set; }
@@ -31,9 +32,23 @@ public class GUIObject
         clickColor = Color.Black;
     }
 
-    public GUIObject(InputManager _input)
+    public GUIObject(SpriteBatch _batch)
+    {
+        batch = _batch;
+        SetPosition(new Vector2(100, 100));
+        SetWidth(200); 
+        SetHeight(50);
+        area = new Rectangle((int)position.X, (int)position.Y, Width, Height);
+        color = Color.White;
+        standardColor = Color.White;
+        hoverColor = Color.Gray;
+        clickColor = Color.Black;
+    }
+
+    public GUIObject(SpriteBatch _batch, InputManager _input)
     {
         input = _input;
+        batch = _batch;
         SetPosition(new Vector2(100, 100));
         SetWidth(200); 
         SetHeight(100);
@@ -44,9 +59,10 @@ public class GUIObject
         clickColor = Color.Black;
     }
 
-    public GUIObject(InputManager _input, Vector2 position, int Width, int Height)
+    public GUIObject(SpriteBatch _batch, InputManager _input, Vector2 position, int Width, int Height)
     {
         input = _input;
+        batch = _batch;
         SetPosition(position);
         SetWidth(Width); 
         SetHeight(Height);
@@ -62,12 +78,15 @@ public class GUIObject
         
     }
 
-    public virtual void Draw(SpriteBatch _batch)
+    public virtual void Draw()
     {
-        Primitives.DrawBox(_batch, 
-                            position, 
-                            color, 
-                            new Vector2(Width, Height));
+        if (batch != null)
+            Primitives.DrawBox(batch, 
+                                position, 
+                                color, 
+                                new Vector2(Width, Height));
+
+        else Console.WriteLine("GUI Object requires an assigned Spritebatch");
     }
 
     public bool IsMouseInConfines()
@@ -126,5 +145,10 @@ public class GUIObject
     public virtual Rectangle GetArea()
     {
         return area;
+    }
+
+    public void SetSpritebatch(SpriteBatch _batch)
+    {
+        batch = _batch;
     }
 }

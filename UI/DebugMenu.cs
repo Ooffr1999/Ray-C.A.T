@@ -27,7 +27,7 @@ public class DebugMenu
         debugText.lineAdjustment = LineAdjustment.Bottom;
         debugText.text = "Debug console";
 
-        DebugMenuHeader = new Button(_input, _batch);
+        DebugMenuHeader = new Button(_batch, _input);
         DebugMenuHeader.SetPosition(new Vector2(debugText.GetArea().X, debugText.GetArea().Y));
         DebugMenuHeader.SetButtonEventType(ButtonEvent.hold);
         DebugMenuHeader.SetWidth(debugText.GetArea().Width);
@@ -72,7 +72,7 @@ public class DebugMenu
         debugText.DrawBoundaryBox();
         debugText.Draw();
 
-        DebugMenuHeader.Draw(batch);
+        DebugMenuHeader.Draw();
     }
 
     public void SetPosition(Vector2 _position)

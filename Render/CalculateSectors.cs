@@ -9,7 +9,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
-public class Sector
+public class SectorBuilder
 {
     List<Point> points = new List<Point>();
     SpriteBatch batch;
@@ -18,7 +18,7 @@ public class Sector
     VertexPositionColor[] vertexPositionColor;
     VertexBuffer vertexBuffer;
 
-    public Sector(SpriteBatch _batch, Camera _cam)
+    public SectorBuilder(SpriteBatch _batch, Camera _cam)
     {
         //VIKTIG: Jeg tar notater under arbeidsprosessen fordi det at JEG SPESSIFIKT skjønner dette er jævla viktig
         /*
@@ -60,6 +60,11 @@ public class Sector
         cam = _cam;
     }
 
+    public void RenderSector(Sector sector)
+    {
+        RenderSector(GetVertexFromScreenVertices(sector.vertices), sector.height);
+    }
+
     public void RenderSector(Vector3[] sectorVertices, float height)
     {
         RenderSector(sectorVertices, height, Vector3.Zero);
@@ -93,9 +98,10 @@ public class Sector
         }
 
         short indicesIndex = 0;
-        short[] indices = new short[(sectorVertices.Length - 1) * 6];
 
-        for (int i = 0; i < indices.Length;)
+        short[] indices = new short[(sectorVertices.Length) * 6];
+
+        for (int i = 0; i < indices.Length; i += 6)
         {
             indices[i] = (Int16)(0 + indicesIndex);
             indices[i + 1] = (Int16)(1 + indicesIndex);
@@ -105,7 +111,6 @@ public class Sector
             indices[i + 5] = (Int16)(2 + indicesIndex);
 
             indicesIndex += 2;
-            i += 6;
         }
 
         vertexBuffer = new VertexBuffer(batch.GraphicsDevice, typeof(VertexPositionColor), vertexPositionColor.Length, BufferUsage.WriteOnly);
@@ -129,60 +134,33 @@ public class Sector
         }
     }
 
-    public Vector3 ProjectVertexToScreenPosition(Vector3 vertex, Camera camera)
+    public static Vector3[] GetVertexFromScreenVertices(List<MapSectorVertice> _mapVertices)
     {
-        return batch.GraphicsDevice.Viewport.Project(vertex, camera.getPerspectiveMatrix(), camera.GetViewMatrix(), Matrix.Identity);
+        Vector3[] vertices = new Vector3[_mapVertices.Count + 1]; 
+
+        for (int i = 0; i < vertices.Length - 1; i++)
+        {
+            int index = i / 2;
+
+            vertices[i] = new Vector3(_mapVertices[i].GetPosition().X, 0, _mapVertices[i].GetPosition().Y) / 10;
+        }
+
+        vertices[vertices.Length - 1] = vertices[0];
+
+        return vertices;
     }
+}
 
-    public float GetPlayerAngleToPoint(Player player, Point point)
-    {
-        //float angle = float.RadiansToDegrees((float)Math.Atan2(point.Y - player.position.Y, point.X - player.position.X));
-        //return angle + player.direction;
-        
-        Vector2 targetDirection = point.ToVector2() - new Vector2(player.position.X, player.position.Z);
-        targetDirection.Normalize();
+public struct Sector
+{
+    public List<MapSectorVertice> vertices;
+    public float height;
+    public BooleanType booleanType;
+}
 
-        Vector2 lookDirection = player.forward;
-        lookDirection.Normalize();
+public enum BooleanType
+{
+    Union,
+    Difference,
 
-        float dot = lookDirection.X * targetDirection.X + lookDirection.Y * targetDirection.Y;
-        float cross = lookDirection.X * targetDirection.Y - lookDirection.Y * targetDirection.X;
-
-        return float.RadiansToDegrees((float)Math.Atan2(cross, dot));
-    }
-
-    public void DrawPointToScreen(SpriteBatch _batch, Player player, Vector2 location, Vector2i WindowResolution)
-    {
-        DrawPointToScreen(_batch, player, location, WindowResolution, Vector2.Zero, Vector2.One);
-    }
-
-    public void DrawPointToScreen(SpriteBatch _batch, Player player, Vector2 location, Vector2i WindowResolution, Vector2 offset, Vector2 scale)
-    {
-        Color shade = Color.White * 1f * (1 / Vector2.Distance(new Vector2(player.position.X, player.position.Z), location));
-        shade.A = 255;
-
-        Primitives.DrawBox(_batch,
-            GetPointToScreenPosition(player, location, WindowResolution).ToVector2() + offset,
-            shade,
-            scale
-            );
-    }
-
-    public static Point GetPointToScreenPosition(Player player, Vector2 location, Vector2i WindowResolution)
-    {
-        float angleToPlayer = float.RadiansToDegrees((float)Math.Atan2(location.Y - player.position.Y, location.X - player.position.X));
-        float xPosition = WindowResolution.X / 2 - (player.direction - angleToPlayer) * 21.5f;
-        Vector2 screenPosition = new Vector2(xPosition, WindowResolution.Y / 2);
-
-        /*
-        if (player.direction >= -180 && player.direction <= -90 &&
-            angleToPlayer <= 180 && angleToPlayer >= 90)
-            screenPosition.X -= 7740;
-
-        if (player.direction <= 180 && player.direction >= 90 &&
-            angleToPlayer >= -180 && angleToPlayer <= -90)
-            screenPosition.X += 7740;    
-        */
-        return new Point((int)screenPosition.X, (int)screenPosition.Y);
-    }
 }

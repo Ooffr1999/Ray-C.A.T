@@ -9,10 +9,12 @@ public class Camera
     Vector3 forward;
     Vector3 right;
     float movementSpeed;
+    bool stopMovement;
 
     //Rotation
     float rotation {get; set;}
     float turnSpeed;
+    bool stopRotation;
 
     //Camera settings
     Matrix viewMatrix;
@@ -75,6 +77,9 @@ public class Camera
 
     public void Move(InputManager _input, float _deltaTime)
     {
+        if (stopMovement)
+            return;
+
         position -= _input.Keyboard.GetAxis(Keys.S, Keys.W) * (getForward() * _deltaTime * movementSpeed);
         position -= _input.Keyboard.GetAxis(Keys.A, Keys.D) * (getRight() * _deltaTime * movementSpeed);
 
@@ -114,6 +119,9 @@ public class Camera
 
     public void Turn(InputManager _input, float _deltaTime)
     {
+        if (stopRotation)
+            return;
+
         rotation -= _input.Mouse.XDelta * _deltaTime * turnSpeed;                               //Add mouse input to direction.
 
         if (_input.Mouse.position.X >= 1915)                                                                                        
@@ -150,5 +158,15 @@ public class Camera
     public Vector3 getCameraTarget()
     {
         return position - getForward();
+    }
+
+    public void FreezeMovement(bool _stopMovement)
+    {
+        stopMovement = _stopMovement;
+    }
+
+    public void FreezeRotation(bool _stopRotation)
+    {
+        stopRotation = _stopRotation;
     }
 }

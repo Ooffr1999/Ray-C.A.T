@@ -13,9 +13,10 @@ public class Button : GUIObject
     bool holding;
     bool active;
 
-    public Button(InputManager _input, SpriteBatch _batch)
+    public Button(SpriteBatch _batch, InputManager _input)
     {
         text = "Label";
+        batch = _batch;
         base.input = _input;  
         textRenderer = new TextRenderer(_batch, AssetLoader.LoadTexture2D("/home/ooffr/Documents/C#/WolfenStein-like/Fonts/square_6x6.png"));     
         SetArea(base.GetPosition(), base.GetHeight(), base.GetWidth());
@@ -100,9 +101,9 @@ public class Button : GUIObject
         base.Update();
     }
 
-    public override void Draw(SpriteBatch _batch)
+    public override void Draw()
     {
-        base.Draw(_batch);
+        base.Draw();
         textRenderer.GetArea();
         textRenderer.text = text;
         textRenderer.textColor = Color.Black;
